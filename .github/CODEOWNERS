@@ -1,0 +1,9 @@
+# 6A Demo · notes-mobile CODEOWNERS
+# 组A(Mobile 线)主力仓,由组A 五个专业 Agent + PL Agent 管辖
+# Agent 花名册见 ~/6a-demo-notes/.claude/agents/ (V1.0 启动时随 repo push GitHub)
+
+*                         @wgj-code
+*.tsx                     @wgj-code
+app.json eas.json         @wgj-code
+src/__tests__/**          @wgj-code
+.github/workflows/**      @wgj-code
