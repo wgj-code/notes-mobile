@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNotesStore } from '../stores/notesStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
@@ -12,23 +12,26 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const [content, setContent] = useState(existingNote?.content ?? '');
   const [saving, setSaving] = useState(false);
   const { createNote, updateNote, deleteNote } = useNotesStore();
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const titleRef = useRef(title);
-  const contentRef = useRef(content);
-
-  useEffect(() => { titleRef.current = title; }, [title]);
-  useEffect(() => { contentRef.current = content; }, [content]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       title: isEditing ? 'Edit Note' : 'New Note',
-      headerRight: isEditing ? () => (
-        <TouchableOpacity onPress={handleDelete}>
-          <Text style={{ color: colors.danger, fontSize: fontSize.md }}>Delete</Text>
-        </TouchableOpacity>
-      ) : undefined,
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <TouchableOpacity onPress={save} disabled={saving}>
+            <Text style={{ color: saving ? colors.border : colors.primary, fontSize: fontSize.md }}>
+              {saving ? 'Saving...' : 'Save'}
+            </Text>
+          </TouchableOpacity>
+          {isEditing && (
+            <TouchableOpacity onPress={handleDelete}>
+              <Text style={{ color: colors.danger, fontSize: fontSize.md }}>Delete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ),
     });
-  }, [navigation, isEditing]);
+  }, [navigation, isEditing, saving, title, content]);
 
   const handleDelete = () => {
     Alert.alert('Delete Note', 'This cannot be undone.', [
@@ -47,8 +50,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   };
 
   const save = async () => {
-    const trimmedTitle = titleRef.current.trim();
-    const currentContent = contentRef.current;
+    const trimmedTitle = title.trim();
     if (!trimmedTitle) {
       Alert.alert('Error', 'Title cannot be empty');
       return;
@@ -56,9 +58,9 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     setSaving(true);
     try {
       if (isEditing) {
-        await updateNote(noteId, trimmedTitle, currentContent);
+        await updateNote(noteId, trimmedTitle, content);
       } else {
-        await createNote(trimmedTitle, currentContent);
+        await createNote(trimmedTitle, content);
       }
       navigation.goBack();
     } catch (error: any) {
@@ -69,19 +71,6 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     }
   };
 
-  const scheduleSave = () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      save();
-    }, 1000);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, []);
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -91,14 +80,14 @@ export default function NoteDetailScreen({ route, navigation }: any) {
         style={styles.titleInput}
         placeholder="Title"
         value={title}
-        onChangeText={(t) => { setTitle(t); scheduleSave(); }}
+        onChangeText={setTitle}
         maxLength={200}
       />
       <TextInput
         style={styles.contentInput}
         placeholder="Start writing..."
         value={content}
-        onChangeText={(c) => { setContent(c); scheduleSave(); }}
+        onChangeText={setContent}
         multiline
         textAlignVertical="top"
       />
