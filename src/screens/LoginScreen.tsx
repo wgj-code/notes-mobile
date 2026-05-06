@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useAuthStore } from '../stores/authStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
 import { colors, spacing, fontSize, borderRadius } from '../lib/theme';
+import { t } from '../i18n';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ export default function LoginScreen({ navigation }: any) {
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      Alert.alert(t('common.error'), t('errors.fillAllFields'));
       return;
     }
     setLoading(true);
@@ -20,7 +21,7 @@ export default function LoginScreen({ navigation }: any) {
       await signIn(email.trim(), password);
     } catch (error: any) {
       const code = mapSupabaseError(error);
-      Alert.alert('Login Failed', getUserMessage(code));
+      Alert.alert(t('auth.loginFailed'), getUserMessage(code));
     } finally {
       setLoading(false);
     }
@@ -28,10 +29,10 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder={t('common.email')}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -40,16 +41,16 @@ export default function LoginScreen({ navigation }: any) {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder={t('common.password')}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
+        <Text style={styles.buttonText}>{loading ? t('auth.loggingIn') : t('auth.login')}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.link}>Don't have an account? Register</Text>
+        <Text style={styles.link}>{t('auth.noAccount')}</Text>
       </TouchableOpacity>
     </View>
   );

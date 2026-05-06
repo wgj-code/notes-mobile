@@ -55,10 +55,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
 
   deleteNote: async (id) => {
-    const { error } = await supabase
-      .from('notes')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id);
+    const { error } = await supabase.rpc('soft_delete_note', { p_note_id: id });
     if (error) throw error;
     set({ notes: get().notes.filter((n) => n.id !== id) });
   },

@@ -1,0 +1,65 @@
+{
+  "common": {
+    "error": "错误",
+    "cancel": "取消",
+    "delete": "删除",
+    "save": "保存",
+    "retry": "重试",
+    "loading": "加载中...",
+    "email": "邮箱",
+    "password": "密码"
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "loggingIn": "登录中...",
+    "creatingAccount": "正在创建账户...",
+    "welcomeBack": "欢迎回来",
+    "createAccount": "创建账户",
+    "confirmPassword": "确认密码",
+    "noAccount": "没有账户？立即注册",
+    "hasAccount": "已有账户？登录",
+    "loginFailed": "登录失败",
+    "registrationFailed": "注册失败"
+  },
+  "notes": {
+    "notes": "笔记",
+    "note": "笔记",
+    "title": "标题",
+    "startWriting": "开始写作...",
+    "newNote": "新建笔记",
+    "editNote": "编辑笔记",
+    "deleteNote": "删除笔记",
+    "confirmDelete": "删除\"{{title}}\"？",
+    "cannotBeUndone": "此操作不可撤销。",
+    "saving": "保存中...",
+    "failedToDelete": "删除笔记失败",
+    "titleEmpty": "标题不能为空",
+    "saveFailed": "保存失败",
+    "noNotesYet": "还没有笔记",
+    "tapToCreate": "点击 + 创建一条"
+  },
+  "settings": {
+    "settings": "设置",
+    "account": "账户",
+    "signOut": "退出登录",
+    "confirmSignOut": "确定要退出吗？",
+    "language": "语言",
+    "languageEn": "英文",
+    "languageZh": "中文"
+  },
+  "errors": {
+    "sessionExpired": "会话已过期，请重新登录",
+    "invalidCredentials": "邮箱或密码不正确",
+    "emailExists": "该邮箱已被注册",
+    "noteNotFound": "未找到笔记",
+    "titleEmpty": "标题不能为空",
+    "titleTooLong": "标题长度不能超过200个字符",
+    "contentTooLarge": "内容不能超过100KB",
+    "network": "网络错误，请重试",
+    "unknown": "出现了一些错误",
+    "fillAllFields": "请填写所有字段",
+    "passwordsMismatch": "两次输入的密码不一致",
+    "passwordTooShort": "密码长度至少为6个字符"
+  }
+}

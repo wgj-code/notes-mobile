@@ -3,6 +3,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, KeyboardAvo
 import { useNotesStore } from '../stores/notesStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
 import { colors, spacing, fontSize } from '../lib/theme';
+import { t } from '../i18n';
 
 export default function NoteDetailScreen({ route, navigation }: any) {
   const { noteId, note: existingNote } = route.params ?? {};
@@ -15,17 +16,17 @@ export default function NoteDetailScreen({ route, navigation }: any) {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: isEditing ? 'Edit Note' : 'New Note',
+      title: isEditing ? t('notes.editNote') : t('notes.newNote'),
       headerRight: () => (
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <TouchableOpacity onPress={save} disabled={saving}>
             <Text style={{ color: saving ? colors.border : colors.primary, fontSize: fontSize.md }}>
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? t('notes.saving') : t('common.save')}
             </Text>
           </TouchableOpacity>
           {isEditing && (
             <TouchableOpacity onPress={handleDelete}>
-              <Text style={{ color: colors.danger, fontSize: fontSize.md }}>Delete</Text>
+              <Text style={{ color: colors.danger, fontSize: fontSize.md }}>{t('common.delete')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -34,15 +35,15 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   }, [navigation, isEditing, saving, title, content]);
 
   const handleDelete = () => {
-    Alert.alert('Delete Note', 'This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('notes.deleteNote'), t('notes.cannotBeUndone'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: async () => {
+        text: t('common.delete'), style: 'destructive', onPress: async () => {
           try {
             await deleteNote(noteId);
             navigation.goBack();
           } catch {
-            Alert.alert('Error', 'Failed to delete note');
+            Alert.alert(t('common.error'), t('notes.failedToDelete'));
           }
         },
       },
@@ -52,7 +53,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const save = async () => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      Alert.alert('Error', 'Title cannot be empty');
+      Alert.alert(t('common.error'), t('notes.titleEmpty'));
       return;
     }
     setSaving(true);
@@ -65,7 +66,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
       navigation.goBack();
     } catch (error: any) {
       const code = mapSupabaseError(error);
-      Alert.alert('Save Failed', getUserMessage(code));
+      Alert.alert(t('notes.saveFailed'), getUserMessage(code));
     } finally {
       setSaving(false);
     }
@@ -78,14 +79,14 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     >
       <TextInput
         style={styles.titleInput}
-        placeholder="Title"
+        placeholder={t('notes.title')}
         value={title}
         onChangeText={setTitle}
         maxLength={200}
       />
       <TextInput
         style={styles.contentInput}
-        placeholder="Start writing..."
+        placeholder={t('notes.startWriting')}
         value={content}
         onChangeText={setContent}
         multiline

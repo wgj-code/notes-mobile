@@ -1,0 +1,65 @@
+{
+  "common": {
+    "error": "Error",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "email": "Email",
+    "password": "Password"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "loggingIn": "Logging in...",
+    "creatingAccount": "Creating account...",
+    "welcomeBack": "Welcome Back",
+    "createAccount": "Create Account",
+    "confirmPassword": "Confirm Password",
+    "noAccount": "Don't have an account? Register",
+    "hasAccount": "Already have an account? Login",
+    "loginFailed": "Login Failed",
+    "registrationFailed": "Registration Failed"
+  },
+  "notes": {
+    "notes": "Notes",
+    "note": "Note",
+    "title": "Title",
+    "startWriting": "Start writing...",
+    "newNote": "New Note",
+    "editNote": "Edit Note",
+    "deleteNote": "Delete Note",
+    "confirmDelete": "Delete \"{{title}}\"?",
+    "cannotBeUndone": "This cannot be undone.",
+    "saving": "Saving...",
+    "failedToDelete": "Failed to delete note",
+    "titleEmpty": "Title cannot be empty",
+    "saveFailed": "Save Failed",
+    "noNotesYet": "No notes yet",
+    "tapToCreate": "Tap + to create one"
+  },
+  "settings": {
+    "settings": "Settings",
+    "account": "Account",
+    "signOut": "Sign Out",
+    "confirmSignOut": "Are you sure?",
+    "language": "Language",
+    "languageEn": "English",
+    "languageZh": "Chinese"
+  },
+  "errors": {
+    "sessionExpired": "Session expired, please login again",
+    "invalidCredentials": "Invalid email or password",
+    "emailExists": "This email is already registered",
+    "noteNotFound": "Note not found",
+    "titleEmpty": "Title cannot be empty",
+    "titleTooLong": "Title must be under 200 characters",
+    "contentTooLarge": "Content must be under 100KB",
+    "network": "Network error, please try again",
+    "unknown": "Something went wrong",
+    "fillAllFields": "Please fill in all fields",
+    "passwordsMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters"
+  }
+}

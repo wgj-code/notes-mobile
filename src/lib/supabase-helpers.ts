@@ -1,4 +1,5 @@
 import type { ErrorCode } from '../types';
+import { t } from '../i18n';
 
 export function mapSupabaseError(error: any): ErrorCode {
   const msg = error?.message?.toLowerCase() ?? '';
@@ -15,18 +16,19 @@ export function mapSupabaseError(error: any): ErrorCode {
   return 'UNKNOWN';
 }
 
-const messages: Record<ErrorCode, string> = {
-  UNAUTHORIZED: 'Session expired, please login again',
-  AUTH_INVALID_CREDENTIALS: 'Invalid email or password',
-  AUTH_EMAIL_EXISTS: 'This email is already registered',
-  NOTE_NOT_FOUND: 'Note not found',
-  NOTE_TITLE_EMPTY: 'Title cannot be empty',
-  NOTE_TITLE_TOO_LONG: 'Title must be under 200 characters',
-  NOTE_CONTENT_TOO_LARGE: 'Content must be under 100KB',
-  NETWORK_ERROR: 'Network error, please try again',
-  UNKNOWN: 'Something went wrong',
+const ERROR_KEY_MAP: Record<ErrorCode, string> = {
+  UNAUTHORIZED: 'errors.sessionExpired',
+  AUTH_INVALID_CREDENTIALS: 'errors.invalidCredentials',
+  AUTH_EMAIL_EXISTS: 'errors.emailExists',
+  NOTE_NOT_FOUND: 'errors.noteNotFound',
+  NOTE_TITLE_EMPTY: 'errors.titleEmpty',
+  NOTE_TITLE_TOO_LONG: 'errors.titleTooLong',
+  NOTE_CONTENT_TOO_LARGE: 'errors.contentTooLarge',
+  NETWORK_ERROR: 'errors.network',
+  UNKNOWN: 'errors.unknown',
 };
 
 export function getUserMessage(code: ErrorCode): string {
-  return messages[code] ?? messages.UNKNOWN;
+  const key = ERROR_KEY_MAP[code] ?? ERROR_KEY_MAP.UNKNOWN;
+  return t(key);
 }

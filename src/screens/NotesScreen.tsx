@@ -5,6 +5,7 @@ import NoteItem from '../components/NoteItem';
 import EmptyState from '../components/EmptyState';
 import type { Note } from '../types';
 import { colors, spacing, fontSize, borderRadius } from '../lib/theme';
+import { t } from '../i18n';
 
 export default function NotesScreen({ navigation }: any) {
   const { notes, loading, error, fetchNotes, deleteNote } = useNotesStore();
@@ -22,12 +23,12 @@ export default function NotesScreen({ navigation }: any) {
   };
 
   const handleLongPress = (note: Note) => {
-    Alert.alert('Delete Note', `Delete "${note.title}"?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('notes.deleteNote'), t('notes.confirmDelete', { title: note.title }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: async () => {
+        text: t('common.delete'), style: 'destructive', onPress: async () => {
           try { await deleteNote(note.id); }
-          catch { Alert.alert('Error', 'Failed to delete note'); }
+          catch { Alert.alert(t('common.error'), t('notes.failedToDelete')); }
         },
       },
     ]);
@@ -43,7 +44,7 @@ export default function NotesScreen({ navigation }: any) {
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={fetchNotes}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       ) : null}

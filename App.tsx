@@ -9,6 +9,7 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import NotesScreen from './src/screens/NotesScreen';
 import NoteDetailScreen from './src/screens/NoteDetailScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import { t } from './src/i18n';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -41,8 +42,16 @@ function AuthNavigator() {
 function MainNavigator() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="NotesTab" component={NotesNavigator} options={{ title: 'Notes' }} />
-      <Tab.Screen name="SettingsTab" component={SettingsScreen} options={{ title: 'Settings' }} />
+      <Tab.Screen
+        name="NotesTab"
+        component={NotesNavigator}
+        options={() => ({ title: t('notes.notes') })}
+      />
+      <Tab.Screen
+        name="SettingsTab"
+        component={SettingsScreen}
+        options={() => ({ title: t('settings.settings') })}
+      />
     </Tab.Navigator>
   );
 }
@@ -52,8 +61,16 @@ const NotesStack = createNativeStackNavigator();
 function NotesNavigator() {
   return (
     <NotesStack.Navigator>
-      <NotesStack.Screen name="NotesList" component={NotesScreen} options={{ title: 'Notes' }} />
-      <NotesStack.Screen name="NoteDetail" component={NoteDetailScreen} options={{ title: 'Note' }} />
+      <NotesStack.Screen
+        name="NotesList"
+        component={NotesScreen}
+        options={() => ({ title: t('notes.notes') })}
+      />
+      <NotesStack.Screen
+        name="NoteDetail"
+        component={NoteDetailScreen}
+        options={() => ({ title: t('notes.note') })}
+      />
     </NotesStack.Navigator>
   );
 }

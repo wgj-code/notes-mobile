@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useAuthStore } from '../stores/authStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
 import { colors, spacing, fontSize, borderRadius } from '../lib/theme';
+import { t } from '../i18n';
 
 export default function RegisterScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -13,15 +14,15 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleRegister = async () => {
     if (!email.trim() || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('errors.fillAllFields'));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert(t('common.error'), t('errors.passwordsMismatch'));
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      Alert.alert(t('common.error'), t('errors.passwordTooShort'));
       return;
     }
     setLoading(true);
@@ -29,7 +30,7 @@ export default function RegisterScreen({ navigation }: any) {
       await signUp(email.trim(), password);
     } catch (error: any) {
       const code = mapSupabaseError(error);
-      Alert.alert('Registration Failed', getUserMessage(code));
+      Alert.alert(t('auth.registrationFailed'), getUserMessage(code));
     } finally {
       setLoading(false);
     }
@@ -37,10 +38,10 @@ export default function RegisterScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.title}>{t('auth.createAccount')}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder={t('common.email')}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -49,23 +50,23 @@ export default function RegisterScreen({ navigation }: any) {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder={t('common.password')}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TextInput
         style={styles.input}
-        placeholder="Confirm Password"
+        placeholder={t('auth.confirmPassword')}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
       <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Register'}</Text>
+        <Text style={styles.buttonText}>{loading ? t('auth.creatingAccount') : t('auth.register')}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={styles.link}>Already have an account? Login</Text>
+        <Text style={styles.link}>{t('auth.hasAccount')}</Text>
       </TouchableOpacity>
     </View>
   );
