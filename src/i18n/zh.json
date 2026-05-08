@@ -37,7 +37,11 @@
     "titleEmpty": "标题不能为空",
     "saveFailed": "保存失败",
     "noNotesYet": "还没有笔记",
-    "tapToCreate": "点击 + 创建一条"
+    "tapToCreate": "点击 + 创建一条",
+    "preview": "预览",
+    "edit": "编辑",
+    "selectFolder": "选择文件夹",
+    "addTag": "添加标签..."
   },
   "settings": {
     "settings": "设置",
@@ -61,5 +65,25 @@
     "fillAllFields": "请填写所有字段",
     "passwordsMismatch": "两次输入的密码不一致",
     "passwordTooShort": "密码长度至少为6个字符"
+  },
+  "search": {
+    "placeholder": "搜索笔记..."
+  },
+  "folder": {
+    "allNotes": "全部笔记",
+    "uncategorized": "未分类",
+    "newFolder": "新建文件夹",
+    "folderName": "文件夹名称",
+    "showFolders": "文件夹",
+    "hideFolders": "隐藏文件夹",
+    "delete": "删除文件夹",
+    "confirmDelete": "删除文件夹\"{{name}}\"？笔记将移至未分类。",
+    "createFailed": "创建文件夹失败",
+    "deleteFailed": "删除文件夹失败",
+    "none": "无文件夹"
+  },
+  "imageUpload": {
+    "addImage": "添加图片",
+    "failed": "上传图片失败"
   }
 }

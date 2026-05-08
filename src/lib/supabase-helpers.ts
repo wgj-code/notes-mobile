@@ -24,6 +24,8 @@ const ERROR_KEY_MAP: Record<ErrorCode, string> = {
   NOTE_TITLE_EMPTY: 'errors.titleEmpty',
   NOTE_TITLE_TOO_LONG: 'errors.titleTooLong',
   NOTE_CONTENT_TOO_LARGE: 'errors.contentTooLarge',
+  FOLDER_NOT_FOUND: 'errors.unknown',
+  FOLDER_NAME_EMPTY: 'errors.titleEmpty',
   NETWORK_ERROR: 'errors.network',
   UNKNOWN: 'errors.unknown',
 };

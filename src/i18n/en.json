@@ -37,7 +37,11 @@
     "titleEmpty": "Title cannot be empty",
     "saveFailed": "Save Failed",
     "noNotesYet": "No notes yet",
-    "tapToCreate": "Tap + to create one"
+    "tapToCreate": "Tap + to create one",
+    "preview": "Preview",
+    "edit": "Edit",
+    "selectFolder": "Select Folder",
+    "addTag": "Add tag..."
   },
   "settings": {
     "settings": "Settings",
@@ -61,5 +65,25 @@
     "fillAllFields": "Please fill in all fields",
     "passwordsMismatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 6 characters"
+  },
+  "search": {
+    "placeholder": "Search notes..."
+  },
+  "folder": {
+    "allNotes": "All Notes",
+    "uncategorized": "Uncategorized",
+    "newFolder": "New Folder",
+    "folderName": "Folder name",
+    "showFolders": "Folders",
+    "hideFolders": "Hide Folders",
+    "delete": "Delete Folder",
+    "confirmDelete": "Delete folder \"{{name}}\"? Notes will be moved to Uncategorized.",
+    "createFailed": "Failed to create folder",
+    "deleteFailed": "Failed to delete folder",
+    "none": "No Folder"
+  },
+  "imageUpload": {
+    "addImage": "Add Image",
+    "failed": "Failed to upload image"
   }
 }
