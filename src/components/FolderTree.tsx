@@ -10,7 +10,8 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 import { useNotesStore } from '../stores/notesStore';
 import type { Folder } from '../types';
@@ -62,6 +63,8 @@ interface Props {
 }
 
 export default function FolderTree({ onFolderSelect }: Props) {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const { folders, selectedFolderId, setSelectedFolderId, createFolder, deleteFolder } = useNotesStore();
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -199,86 +202,90 @@ export default function FolderTree({ onFolderSelect }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingBottom: spacing.sm,
-  },
-  item: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  folderItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemActive: {
-    backgroundColor: '#F0F5FF',
-  },
-  itemText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-  },
-  itemTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  newFolderButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  newFolderText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.xl,
-    width: '80%',
-  },
-  modalTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: '600',
-    marginBottom: spacing.lg,
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 8,
-    padding: spacing.md,
-    fontSize: fontSize.lg,
-    marginBottom: spacing.lg,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: spacing.md,
-  },
-  modalButton: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: 8,
-  },
-  modalButtonPrimary: {
-    backgroundColor: colors.primary,
-  },
-  modalButtonText: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-  },
-  modalButtonTextPrimary: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: {
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+      paddingBottom: spacing.sm,
+    },
+    item: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    folderItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    itemActive: {
+      backgroundColor: c.activeOptionBg,
+    },
+    itemText: {
+      fontSize: fontSize.md,
+      color: c.text,
+    },
+    itemTextActive: {
+      color: c.primary,
+      fontWeight: '600',
+    },
+    newFolderButton: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    newFolderText: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: '500',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: c.card,
+      borderRadius: 12,
+      padding: spacing.xl,
+      width: '80%',
+    },
+    modalTitle: {
+      fontSize: fontSize.xl,
+      fontWeight: '600',
+      marginBottom: spacing.lg,
+      color: c.text,
+    },
+    modalInput: {
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+      borderRadius: 8,
+      padding: spacing.md,
+      fontSize: fontSize.lg,
+      marginBottom: spacing.lg,
+      color: c.text,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      gap: spacing.md,
+    },
+    modalButton: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: 8,
+    },
+    modalButtonPrimary: {
+      backgroundColor: c.primary,
+    },
+    modalButtonText: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+    },
+    modalButtonTextPrimary: {
+      color: '#fff',
+      fontWeight: '600',
+    },
+  });
+}

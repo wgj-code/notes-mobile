@@ -19,12 +19,14 @@ import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
 import MarkdownEditor from '../components/MarkdownEditor';
 import MarkdownPreview from '../components/MarkdownPreview';
 import ImageUpload from '../components/ImageUpload';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 
 type ViewMode = 'edit' | 'preview';
 
 export default function NoteDetailScreen({ route, navigation }: any) {
+  const colors = useThemeColors();
   const { noteId, note: existingNote } = route.params ?? {};
   const isEditing = !!noteId;
 
@@ -153,6 +155,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   };
 
   const selectedFolder = folders.find((f) => f.id === folderId);
+  const styles = makeStyles(colors);
 
   return (
     <KeyboardAvoidingView
@@ -269,85 +272,89 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
-  titleInput: {
-    fontSize: fontSize.xxl,
-    fontWeight: '600',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingBottom: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  folderSelector: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: 8,
-    marginBottom: spacing.sm,
-  },
-  folderSelectorText: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-  },
-  tagsContainer: {
-    flexGrow: 0,
-    marginBottom: spacing.sm,
-  },
-  tagChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 16,
-    backgroundColor: '#F0F5FF',
-    marginRight: spacing.sm,
-  },
-  tagChipText: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-  },
-  tagInput: {
-    minWidth: 80,
-    fontSize: fontSize.sm,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  imageUploadRow: {
-    marginBottom: spacing.sm,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: spacing.xl,
-    width: '80%',
-    maxHeight: '60%',
-  },
-  modalTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: '600',
-    marginBottom: spacing.lg,
-  },
-  folderList: {
-    maxHeight: 300,
-  },
-  folderOption: {
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  folderOptionText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-  },
-  folderOptionActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background, padding: spacing.lg },
+    titleInput: {
+      fontSize: fontSize.xxl,
+      fontWeight: '600',
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+      paddingBottom: spacing.sm,
+      marginBottom: spacing.md,
+      color: c.text,
+    },
+    folderSelector: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+      borderRadius: 8,
+      marginBottom: spacing.sm,
+    },
+    folderSelectorText: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+    },
+    tagsContainer: {
+      flexGrow: 0,
+      marginBottom: spacing.sm,
+    },
+    tagChip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: 16,
+      backgroundColor: c.tagChipBg,
+      marginRight: spacing.sm,
+    },
+    tagChipText: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+    },
+    tagInput: {
+      minWidth: 80,
+      fontSize: fontSize.sm,
+      color: c.text,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+    },
+    imageUploadRow: {
+      marginBottom: spacing.sm,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: c.card,
+      borderRadius: 12,
+      padding: spacing.xl,
+      width: '80%',
+      maxHeight: '60%',
+    },
+    modalTitle: {
+      fontSize: fontSize.xl,
+      fontWeight: '600',
+      marginBottom: spacing.lg,
+      color: c.text,
+    },
+    folderList: {
+      maxHeight: 300,
+    },
+    folderOption: {
+      paddingVertical: spacing.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    folderOptionText: {
+      fontSize: fontSize.md,
+      color: c.text,
+    },
+    folderOptionActive: {
+      color: c.primary,
+      fontWeight: '600',
+    },
+  });
+}

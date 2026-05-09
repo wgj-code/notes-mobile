@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuthStore } from './src/stores/authStore';
+import { ThemeProvider } from './src/contexts/ThemeContext';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import NotesScreen from './src/screens/NotesScreen';
@@ -91,14 +92,16 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        {session ? (
-          <RootStack.Screen name="Main" component={MainNavigator} />
-        ) : (
-          <RootStack.Screen name="Auth" component={AuthNavigator} />
-        )}
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          {session ? (
+            <RootStack.Screen name="Main" component={MainNavigator} />
+          ) : (
+            <RootStack.Screen name="Auth" component={AuthNavigator} />
+          )}
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }

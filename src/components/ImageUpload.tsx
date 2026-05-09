@@ -3,7 +3,8 @@ import { TouchableOpacity, Text, ActivityIndicator, Alert, StyleSheet } from 're
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { supabase } from '../lib/supabase';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export default function ImageUpload({ onImageUploaded }: Props) {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const [uploading, setUploading] = useState(false);
 
   const pickAndUpload = async () => {
@@ -89,21 +92,23 @@ function decode(base64: string): Uint8Array {
   return bytes;
 }
 
-const styles = StyleSheet.create({
-  button: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 100,
-    minHeight: 36,
-  },
-  buttonText: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    button: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: 100,
+      minHeight: 36,
+    },
+    buttonText: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+      fontWeight: '500',
+    },
+  });
+}

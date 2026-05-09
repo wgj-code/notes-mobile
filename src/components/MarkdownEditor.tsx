@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 
 interface Props {
@@ -18,6 +19,8 @@ const TOOLBAR_ITEMS = [
 ];
 
 export default function MarkdownEditor({ value, onChangeText, placeholder }: Props) {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const inputRef = useRef<TextInput>(null);
 
   const insertMarkdown = (item: typeof TOOLBAR_ITEMS[number]) => {
@@ -71,45 +74,48 @@ export default function MarkdownEditor({ value, onChangeText, placeholder }: Pro
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  toolbar: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    gap: spacing.sm,
-  },
-  toolbarButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 4,
-    backgroundColor: colors.border,
-  },
-  toolbarButtonText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  editor: {
-    flex: 1,
-    fontSize: fontSize.lg,
-    lineHeight: 24,
-    padding: spacing.lg,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  charCount: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    toolbar: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      gap: spacing.sm,
+    },
+    toolbarButton: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: 4,
+      backgroundColor: c.border,
+    },
+    toolbarButtonText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: c.text,
+    },
+    editor: {
+      flex: 1,
+      fontSize: fontSize.lg,
+      lineHeight: 24,
+      padding: spacing.lg,
+      color: c.text,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xs,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+    charCount: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+    },
+  });
+}

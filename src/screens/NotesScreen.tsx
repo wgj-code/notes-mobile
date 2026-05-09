@@ -19,10 +19,12 @@ import FolderTree from '../components/FolderTree';
 import TagFilter from '../components/TagFilter';
 import SyncStatus from '../components/SyncStatus';
 import type { Note } from '../types';
-import { colors, spacing, fontSize, borderRadius } from '../lib/theme';
+import { spacing, fontSize, borderRadius } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 
 export default function NotesScreen({ navigation }: any) {
+  const colors = useThemeColors();
   const {
     notes,
     loading,
@@ -114,6 +116,8 @@ export default function NotesScreen({ navigation }: any) {
       )
     : filteredNotes();
 
+  const styles = makeStyles(colors);
+
   return (
     <View style={styles.container}>
       {/* Error banner */}
@@ -173,63 +177,65 @@ export default function NotesScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  emptyContainer: { flex: 1 },
-  errorBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFF3F0',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFDDD6',
-  },
-  errorText: { flex: 1, color: colors.danger, fontSize: fontSize.md },
-  retryText: {
-    color: colors.primary,
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    marginLeft: spacing.md,
-  },
-  toolbarRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-  },
-  folderToggle: {
-    paddingVertical: spacing.xs,
-  },
-  folderToggleText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  importButton: {
-    paddingVertical: spacing.xs,
-  },
-  importButtonText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.lg,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  fabText: { color: '#fff', fontSize: 28, lineHeight: 30 },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    emptyContainer: { flex: 1 },
+    errorBanner: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: c.errorBannerBg,
+      padding: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: c.errorBannerBorder,
+    },
+    errorText: { flex: 1, color: c.danger, fontSize: fontSize.md },
+    retryText: {
+      color: c.primary,
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      marginLeft: spacing.md,
+    },
+    toolbarRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xs,
+    },
+    folderToggle: {
+      paddingVertical: spacing.xs,
+    },
+    folderToggleText: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: '500',
+    },
+    importButton: {
+      paddingVertical: spacing.xs,
+    },
+    importButtonText: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: '500',
+    },
+    fab: {
+      position: 'absolute',
+      right: 20,
+      bottom: 20,
+      width: 56,
+      height: 56,
+      borderRadius: borderRadius.lg,
+      backgroundColor: c.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+    },
+    fabText: { color: '#fff', fontSize: 28, lineHeight: 30 },
+  });
+}

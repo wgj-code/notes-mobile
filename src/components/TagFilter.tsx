@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { useNotesStore } from '../stores/notesStore';
 
 interface Props {
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export default function TagFilter({ selectedTag, onTagSelect }: Props) {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const notes = useNotesStore((s) => s.notes);
 
   const uniqueTags = useMemo(() => {
@@ -55,32 +58,34 @@ export default function TagFilter({ selectedTag, onTagSelect }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 0,
-    maxHeight: 50,
-  },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-    gap: spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 16,
-    backgroundColor: colors.border,
-    marginRight: spacing.sm,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-  },
-  chipText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  chipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: {
+      flexGrow: 0,
+      maxHeight: 50,
+    },
+    content: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xs,
+      gap: spacing.sm,
+    },
+    chip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: 16,
+      backgroundColor: c.border,
+      marginRight: spacing.sm,
+    },
+    chipActive: {
+      backgroundColor: c.primary,
+    },
+    chipText: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+    },
+    chipTextActive: {
+      color: '#fff',
+      fontWeight: '600',
+    },
+  });
+}

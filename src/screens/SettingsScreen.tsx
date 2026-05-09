@@ -1,12 +1,24 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuthStore } from '../stores/authStore';
-import { colors, spacing, fontSize, borderRadius } from '../lib/theme';
+import { spacing, fontSize, borderRadius } from '../lib/theme';
+import { useThemeColors, useTheme } from '../contexts/ThemeContext';
 import { t, getLanguage, setLanguage } from '../i18n';
 
+type ThemeMode = 'system' | 'light' | 'dark';
+const THEME_OPTIONS: { key: ThemeMode; labelKey: string }[] = [
+  { key: 'system', labelKey: 'settings.themeSystem' },
+  { key: 'light', labelKey: 'settings.themeLight' },
+  { key: 'dark', labelKey: 'settings.themeDark' },
+];
+
 export default function SettingsScreen() {
+  const colors = useThemeColors();
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
   const { session, signOut } = useAuthStore();
   const [lang, setLang] = useState<'en' | 'zh'>(getLanguage() as 'en' | 'zh');
+
+  const styles = makeStyles(colors);
 
   const handleSignOut = () => {
     Alert.alert(t('settings.signOut'), t('settings.confirmSignOut'), [
@@ -50,6 +62,23 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.label}>{t('settings.theme')}</Text>
+        <View style={styles.languageRow}>
+          {THEME_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.key}
+              style={[styles.langOption, themeMode === opt.key && styles.langOptionActive]}
+              onPress={() => setThemeMode(opt.key)}
+            >
+              <Text style={[styles.langText, themeMode === opt.key && styles.langTextActive]}>
+                {t(opt.labelKey)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
       <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>
         <Text style={styles.dangerText}>{t('settings.signOut')}</Text>
       </TouchableOpacity>
@@ -57,40 +86,42 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
-  section: { marginBottom: spacing.xl },
-  label: { fontSize: fontSize.sm, color: colors.textMuted, textTransform: 'uppercase', marginBottom: spacing.xs },
-  value: { fontSize: fontSize.lg, color: colors.text, fontWeight: '500' },
-  languageRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  langOption: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.inputBorder,
-    borderRadius: borderRadius.sm,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  langOptionActive: {
-    borderColor: colors.primary,
-    backgroundColor: '#F0F5FF',
-  },
-  langText: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  langTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  dangerButton: {
-    borderWidth: 1, borderColor: colors.danger, borderRadius: borderRadius.sm,
-    padding: spacing.lg, alignItems: 'center',
-  },
-  dangerText: { color: colors.danger, fontSize: fontSize.lg, fontWeight: '600' },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background, padding: spacing.xl },
+    section: { marginBottom: spacing.xl },
+    label: { fontSize: fontSize.sm, color: c.textMuted, textTransform: 'uppercase', marginBottom: spacing.xs },
+    value: { fontSize: fontSize.lg, color: c.text, fontWeight: '500' },
+    languageRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    langOption: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+      borderRadius: borderRadius.sm,
+      padding: spacing.md,
+      alignItems: 'center',
+    },
+    langOptionActive: {
+      borderColor: c.primary,
+      backgroundColor: c.activeOptionBg,
+    },
+    langText: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      fontWeight: '500',
+    },
+    langTextActive: {
+      color: c.primary,
+      fontWeight: '600',
+    },
+    dangerButton: {
+      borderWidth: 1, borderColor: c.danger, borderRadius: borderRadius.sm,
+      padding: spacing.lg, alignItems: 'center',
+    },
+    dangerText: { color: c.danger, fontSize: fontSize.lg, fontWeight: '600' },
+  });
+}

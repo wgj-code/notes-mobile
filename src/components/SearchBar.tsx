@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 import { useNotesStore } from '../stores/notesStore';
 
 export default function SearchBar() {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const { searchQuery, setSearchQuery } = useNotesStore();
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,28 +56,30 @@ export default function SearchBar() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.border,
-    borderRadius: 8,
-    marginHorizontal: spacing.lg,
-    marginVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    fontSize: fontSize.md,
-    color: colors.text,
-  },
-  clearButton: {
-    padding: spacing.xs,
-  },
-  clearText: {
-    fontSize: fontSize.lg,
-    color: colors.textMuted,
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.border,
+      borderRadius: 8,
+      marginHorizontal: spacing.lg,
+      marginVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+    },
+    input: {
+      flex: 1,
+      height: 40,
+      fontSize: fontSize.md,
+      color: c.text,
+    },
+    clearButton: {
+      padding: spacing.xs,
+    },
+    clearText: {
+      fontSize: fontSize.lg,
+      color: c.textMuted,
+      fontWeight: '600',
+    },
+  });
+}

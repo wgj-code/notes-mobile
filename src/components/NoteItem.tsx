@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { Note } from '../types';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 
 interface Props {
   note: Note;
@@ -10,6 +11,9 @@ interface Props {
 }
 
 export default function NoteItem({ note, onPress, onLongPress }: Props) {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
+
   return (
     <TouchableOpacity
       onPress={() => onPress(note)}
@@ -23,9 +27,11 @@ export default function NoteItem({ note, onPress, onLongPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: colors.border },
-  title: { fontSize: fontSize.lg, fontWeight: '600', marginBottom: spacing.xs },
-  preview: { fontSize: fontSize.md, color: colors.textSecondary, lineHeight: 20 },
-  date: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.sm },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: { padding: spacing.lg, borderBottomWidth: 1, borderBottomColor: c.border },
+    title: { fontSize: fontSize.lg, fontWeight: '600', marginBottom: spacing.xs, color: c.text },
+    preview: { fontSize: fontSize.md, color: c.textSecondary, lineHeight: 20 },
+    date: { fontSize: fontSize.sm, color: c.textMuted, marginTop: spacing.sm },
+  });
+}

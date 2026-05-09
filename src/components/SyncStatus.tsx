@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '../lib/theme';
+import { spacing, fontSize } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { useNotesStore } from '../stores/notesStore';
 
 export default function SyncStatus() {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const syncStatus = useNotesStore((s) => s.syncStatus);
 
   return (
@@ -27,20 +30,22 @@ export default function SyncStatus() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: spacing.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  indicator: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  icon: {
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: {
+      paddingHorizontal: spacing.sm,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    indicator: {
+      width: 24,
+      height: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    icon: {
+      fontSize: fontSize.lg,
+      fontWeight: '600',
+    },
+  });
+}

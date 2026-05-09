@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "didi-Notes",
-    "slug": "didi-notes",
+    "name": "迪迪笔记",
+    "slug": "notes-mobile",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -13,10 +13,17 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.wgjcode.notes"
+      "bundleIdentifier": "com.wgjcode.notes",
+      "infoPlist": {
+        "CFBundleDisplayName": "迪迪笔记"
+      }
     },
     "android": {
-      "package": "com.wgjcode.notes"
+      "package": "com.wgjcode.notes",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.jpg",
+        "backgroundColor": "#ffffff"
+      }
     },
     "extra": {
       "eas": {

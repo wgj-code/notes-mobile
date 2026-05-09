@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuthStore } from '../stores/authStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
-import { colors, spacing, fontSize, borderRadius } from '../lib/theme';
+import { spacing, fontSize, borderRadius } from '../lib/theme';
+import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
 
 export default function RegisterScreen({ navigation }: any) {
+  const colors = useThemeColors();
+  const styles = makeStyles(colors);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -72,17 +75,19 @@ export default function RegisterScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: colors.background },
-  title: { fontSize: fontSize.title, fontWeight: '700', marginBottom: 32, textAlign: 'center' },
-  input: {
-    borderWidth: 1, borderColor: colors.inputBorder, borderRadius: borderRadius.sm,
-    padding: 14, fontSize: fontSize.lg, marginBottom: spacing.md,
-  },
-  button: {
-    backgroundColor: colors.primary, borderRadius: borderRadius.sm,
-    padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm,
-  },
-  buttonText: { color: '#fff', fontSize: fontSize.lg, fontWeight: '600' },
-  link: { color: colors.primary, textAlign: 'center', marginTop: spacing.lg, fontSize: fontSize.md },
-});
+function makeStyles(c: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    container: { flex: 1, justifyContent: 'center', padding: spacing.xl, backgroundColor: c.background },
+    title: { fontSize: fontSize.title, fontWeight: '700', marginBottom: 32, textAlign: 'center', color: c.text },
+    input: {
+      borderWidth: 1, borderColor: c.inputBorder, borderRadius: borderRadius.sm,
+      padding: 14, fontSize: fontSize.lg, marginBottom: spacing.md, color: c.text,
+    },
+    button: {
+      backgroundColor: c.primary, borderRadius: borderRadius.sm,
+      padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm,
+    },
+    buttonText: { color: '#fff', fontSize: fontSize.lg, fontWeight: '600' },
+    link: { color: c.primary, textAlign: 'center', marginTop: spacing.lg, fontSize: fontSize.md },
+  });
+}
