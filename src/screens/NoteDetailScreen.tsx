@@ -12,6 +12,8 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useNotesStore } from '../stores/notesStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
 import MarkdownEditor from '../components/MarkdownEditor';
@@ -47,6 +49,13 @@ export default function NoteDetailScreen({ route, navigation }: any) {
               {viewMode === 'edit' ? t('notes.preview') : t('notes.edit')}
             </Text>
           </TouchableOpacity>
+          {isEditing && (
+            <TouchableOpacity onPress={handleExport}>
+              <Text style={{ color: colors.primary, fontSize: fontSize.md }}>
+                {t('notes.export')}
+              </Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={save} disabled={saving}>
             <Text style={{ color: saving ? colors.border : colors.primary, fontSize: fontSize.md }}>
               {saving ? t('notes.saving') : t('common.save')}
@@ -117,6 +126,25 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const handleImageUploaded = (url: string) => {
     const imageMarkdown = `\n![image](${url})\n`;
     setContent(content + imageMarkdown);
+  };
+
+  const handleExport = async () => {
+    const filename = title.trim() || 'note';
+    const safeFilename = filename.replace(/[/\\?%*:|"<>]/g, '-');
+    const markdown = `# ${title}\n\n${content}`;
+    const fileUri = `${FileSystem.cacheDirectory}${safeFilename}.md`;
+    try {
+      await FileSystem.writeAsStringAsync(fileUri, markdown, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
+      } else {
+        Alert.alert(t('notes.export'), t('common.error'));
+      }
+    } catch {
+      Alert.alert(t('notes.export'), t('common.error'));
+    }
   };
 
   const selectedFolder = folders.find((f) => f.id === folderId);

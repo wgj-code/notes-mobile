@@ -41,7 +41,9 @@
     "preview": "Preview",
     "edit": "Edit",
     "selectFolder": "Select Folder",
-    "addTag": "Add tag..."
+    "addTag": "Add tag...",
+    "export": "Export",
+    "import": "Import"
   },
   "settings": {
     "settings": "Settings",

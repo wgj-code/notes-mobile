@@ -9,6 +9,8 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import { useNotesStore } from '../stores/notesStore';
 import NoteItem from '../components/NoteItem';
 import EmptyState from '../components/EmptyState';
@@ -28,6 +30,7 @@ export default function NotesScreen({ navigation }: any) {
     fetchNotes,
     fetchFolders,
     deleteNote,
+    createNote,
     filteredNotes,
     syncLocalToRemote,
     isOnline,
@@ -84,6 +87,26 @@ export default function NotesScreen({ navigation }: any) {
     navigation.navigate('NoteDetail', { noteId: null });
   };
 
+  const handleImport = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['text/markdown', 'text/plain'],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.length) return;
+
+      const file = result.assets[0];
+      const content = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      const name = file.name.replace(/\.(md|txt)$/i, '');
+      await createNote(name, content);
+      fetchNotes();
+    } catch {
+      Alert.alert(t('notes.import'), t('common.error'));
+    }
+  };
+
   // Get notes filtered by tag
   const displayedNotes = selectedTag
     ? filteredNotes().filter(
@@ -106,7 +129,7 @@ export default function NotesScreen({ navigation }: any) {
       {/* Search bar */}
       <SearchBar />
 
-      {/* Sync status + folder toggle */}
+      {/* Sync status + folder toggle + import */}
       <View style={styles.toolbarRow}>
         <TouchableOpacity
           style={styles.folderToggle}
@@ -115,6 +138,9 @@ export default function NotesScreen({ navigation }: any) {
           <Text style={styles.folderToggleText}>
             {showFolders ? t('folder.hideFolders') : t('folder.showFolders')}
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.importButton} onPress={handleImport}>
+          <Text style={styles.importButtonText}>{t('notes.import')}</Text>
         </TouchableOpacity>
         <SyncStatus />
       </View>
@@ -177,6 +203,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   folderToggleText: {
+    fontSize: fontSize.md,
+    color: colors.primary,
+    fontWeight: '500',
+  },
+  importButton: {
+    paddingVertical: spacing.xs,
+  },
+  importButtonText: {
     fontSize: fontSize.md,
     color: colors.primary,
     fontWeight: '500',

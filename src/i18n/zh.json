@@ -41,7 +41,9 @@
     "preview": "预览",
     "edit": "编辑",
     "selectFolder": "选择文件夹",
-    "addTag": "添加标签..."
+    "addTag": "添加标签...",
+    "export": "导出",
+    "import": "导入"
   },
   "settings": {
     "settings": "设置",
