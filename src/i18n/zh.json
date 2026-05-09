@@ -43,7 +43,8 @@
     "selectFolder": "选择文件夹",
     "addTag": "添加标签...",
     "export": "导出",
-    "import": "导入"
+    "import": "导入",
+    "internalLink": "链接到笔记"
   },
   "settings": {
     "settings": "设置",

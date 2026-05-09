@@ -28,10 +28,15 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const { noteId, note: existingNote } = route.params ?? {};
   const isEditing = !!noteId;
 
-  const [title, setTitle] = useState(existingNote?.title ?? '');
-  const [content, setContent] = useState(existingNote?.content ?? '');
-  const [folderId, setFolderId] = useState<string | null>(existingNote?.folder_id ?? null);
-  const [tags, setTags] = useState<string[]>(existingNote?.tags ?? []);
+  // When navigating from a [[wiki-link]], note may be null — look up from store
+  const resolvedNote = existingNote ?? (
+    isEditing ? useNotesStore.getState().notes.find((n) => n.id === noteId) ?? null : null
+  );
+
+  const [title, setTitle] = useState(resolvedNote?.title ?? '');
+  const [content, setContent] = useState(resolvedNote?.content ?? '');
+  const [folderId, setFolderId] = useState<string | null>(resolvedNote?.folder_id ?? null);
+  const [tags, setTags] = useState<string[]>(resolvedNote?.tags ?? []);
   const [tagInput, setTagInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('edit');
@@ -210,7 +215,12 @@ export default function NoteDetailScreen({ route, navigation }: any) {
           placeholder={t('notes.startWriting')}
         />
       ) : (
-        <MarkdownPreview content={content} />
+        <MarkdownPreview
+          content={content}
+          onNavigateToNote={(noteId) => {
+            navigation.push('NoteDetail', { noteId, note: null });
+          }}
+        />
       )}
 
       {/* Folder picker modal */}

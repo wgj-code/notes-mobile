@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { colors, spacing, fontSize } from '../lib/theme';
+import {
+  processWikiLinks,
+  isNoteLink,
+  extractNoteTitleFromLink,
+  findNoteIdByTitle,
+} from '../lib/markdown/linkParser';
 
 interface Props {
   content: string;
+  /** Called when a [[wiki-link]] is tapped with the target note ID. */
+  onNavigateToNote?: (noteId: string) => void;
 }
 
 const markdownStyles = {
@@ -75,10 +83,40 @@ const markdownStyles = {
   },
 };
 
-export default function MarkdownPreview({ content }: Props) {
+export default function MarkdownPreview({ content, onNavigateToNote }: Props) {
+  const handleLinkPress = useCallback(
+    (url: string) => {
+      if (!onNavigateToNote) return false;
+
+      if (isNoteLink(url)) {
+        const title = extractNoteTitleFromLink(url);
+        if (title) {
+          const noteId = findNoteIdByTitle(title);
+          if (noteId) {
+            onNavigateToNote(noteId);
+            return true;
+          }
+        }
+        // Note not found - let the press pass through (no-op)
+        return true;
+      }
+
+      // External link - let default behavior handle it
+      return false;
+    },
+    [onNavigateToNote]
+  );
+
+  const processedContent = processWikiLinks(content);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Markdown style={markdownStyles}>{content}</Markdown>
+      <Markdown
+        style={markdownStyles}
+        onLinkPress={onNavigateToNote ? handleLinkPress : undefined}
+      >
+        {processedContent}
+      </Markdown>
     </ScrollView>
   );
 }

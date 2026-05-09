@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { colors, spacing, fontSize } from '../lib/theme';
+import { t } from '../i18n';
 
 interface Props {
   value: string;
@@ -12,6 +13,7 @@ const TOOLBAR_ITEMS = [
   { label: 'B', action: 'bold', wrap: ['**', '**'] },
   { label: 'I', action: 'italic', wrap: ['*', '*'] },
   { label: '[]', action: 'link', wrap: ['[', '](url)'] },
+  { label: '[[]]', action: 'internalLink', wrap: ['[[', ']]'] },
   { label: '-', action: 'list', prefix: '- ' },
 ];
 

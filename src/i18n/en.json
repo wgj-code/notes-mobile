@@ -43,7 +43,8 @@
     "selectFolder": "Select Folder",
     "addTag": "Add tag...",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "internalLink": "Link to note"
   },
   "settings": {
     "settings": "Settings",
