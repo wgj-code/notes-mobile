@@ -92,5 +92,33 @@
   "imageUpload": {
     "addImage": "Add Image",
     "failed": "Failed to upload image"
+  },
+  "feedback": {
+    "title": "Feedback",
+    "submitFeedback": "Submit Feedback",
+    "description": "Description",
+    "descriptionPlaceholder": "Tell us what you think...",
+    "category": "Category",
+    "bug": "Bug",
+    "feature": "Feature",
+    "improvement": "Improvement",
+    "other": "Other",
+    "attachImages": "Attach Images",
+    "removeImage": "Remove",
+    "recordVoice": "Record Voice",
+    "stopRecording": "Stop",
+    "recording": "Recording...",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "success": "Feedback submitted successfully!",
+    "submitFailed": "Failed to submit feedback",
+    "descriptionRequired": "Please enter a description",
+    "history": "My Feedback",
+    "noFeedback": "No feedback yet",
+    "statusNew": "New",
+    "statusReviewed": "Reviewed",
+    "statusResolved": "Resolved",
+    "statusWontfix": "Won't Fix",
+    "permissionDenied": "Microphone permission is required for voice recording"
   }
 }

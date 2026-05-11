@@ -92,5 +92,33 @@
   "imageUpload": {
     "addImage": "添加图片",
     "failed": "上传图片失败"
+  },
+  "feedback": {
+    "title": "反馈",
+    "submitFeedback": "提交反馈",
+    "description": "描述",
+    "descriptionPlaceholder": "告诉我们你的想法...",
+    "category": "分类",
+    "bug": "Bug",
+    "feature": "功能",
+    "improvement": "改进",
+    "other": "其他",
+    "attachImages": "添加图片",
+    "removeImage": "移除",
+    "recordVoice": "录制语音",
+    "stopRecording": "停止",
+    "recording": "录制中...",
+    "submit": "提交",
+    "submitting": "提交中...",
+    "success": "反馈提交成功！",
+    "submitFailed": "提交反馈失败",
+    "descriptionRequired": "请输入描述",
+    "history": "我的反馈",
+    "noFeedback": "暂无反馈",
+    "statusNew": "新建",
+    "statusReviewed": "已查看",
+    "statusResolved": "已解决",
+    "statusWontfix": "不予处理",
+    "permissionDenied": "需要麦克风权限才能录制语音"
   }
 }

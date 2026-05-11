@@ -19,6 +19,22 @@ export interface Folder {
   updated_at: string;
 }
 
+export type FeedbackCategory = 'bug' | 'feature' | 'improvement' | 'other';
+
+export type FeedbackStatus = 'new' | 'reviewed' | 'resolved' | 'wontfix';
+
+export interface Feedback {
+  id: string;
+  user_id: string;
+  content: string;
+  voice_url: string | null;
+  images: string[];
+  category: FeedbackCategory;
+  status: FeedbackStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 export type ErrorCode =
   | 'UNAUTHORIZED'
   | 'AUTH_INVALID_CREDENTIALS'

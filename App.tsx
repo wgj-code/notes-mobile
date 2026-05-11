@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuthStore } from './src/stores/authStore';
@@ -10,11 +10,14 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import NotesScreen from './src/screens/NotesScreen';
 import NoteDetailScreen from './src/screens/NoteDetailScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import FeedbackScreen from './src/screens/FeedbackScreen';
+import FeedbackButton from './src/components/FeedbackButton';
 import { t } from './src/i18n';
 
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  Feedback: undefined;
 };
 
 export type AuthStackParamList = {
@@ -42,18 +45,28 @@ function AuthNavigator() {
 
 function MainNavigator() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen
-        name="NotesTab"
-        component={NotesNavigator}
-        options={() => ({ title: t('notes.notes') })}
-      />
-      <Tab.Screen
-        name="SettingsTab"
-        component={SettingsScreen}
-        options={() => ({ title: t('settings.settings') })}
-      />
-    </Tab.Navigator>
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator screenOptions={{ headerShown: false }}>
+        <Tab.Screen
+          name="NotesTab"
+          component={NotesNavigator}
+          options={() => ({ title: t('notes.notes') })}
+        />
+        <Tab.Screen
+          name="SettingsTab"
+          component={SettingsScreen}
+          options={() => ({ title: t('settings.settings') })}
+        />
+      </Tab.Navigator>
+      <FeedbackButtonOverlay />
+    </View>
+  );
+}
+
+function FeedbackButtonOverlay() {
+  const navigation = useNavigation<any>();
+  return (
+    <FeedbackButton onPress={() => navigation.navigate('Feedback')} />
   );
 }
 
@@ -96,7 +109,18 @@ export default function App() {
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
           {session ? (
-            <RootStack.Screen name="Main" component={MainNavigator} />
+            <>
+              <RootStack.Screen name="Main" component={MainNavigator} />
+              <RootStack.Screen
+                name="Feedback"
+                component={FeedbackScreen}
+                options={{
+                  headerShown: true,
+                  title: t('feedback.title'),
+                  presentation: 'modal',
+                }}
+              />
+            </>
           ) : (
             <RootStack.Screen name="Auth" component={AuthNavigator} />
           )}
