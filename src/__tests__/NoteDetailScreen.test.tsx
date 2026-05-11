@@ -9,9 +9,12 @@ const mockNavigation = { navigate: mockNavigate, goBack: mockGoBack, setOptions:
 const mockRoute = { params: { noteId: null, note: undefined } };
 
 const mockNotesState = {
+  notes: [],
+  folders: [],
   createNote: jest.fn(),
   updateNote: jest.fn(),
   deleteNote: jest.fn(),
+  fetchFolders: jest.fn(),
 };
 
 jest.mock('../stores/notesStore', () => ({
