@@ -280,6 +280,14 @@ export default function FeedbackScreen() {
       <Text style={styles.historyDate}>
         {new Date(item.created_at).toLocaleDateString()}
       </Text>
+      {item.response ? (
+        <View style={[styles.responseBox, !item.is_read && styles.responseUnread]}>
+          <Text style={styles.responseText}>{t('feedback.response')}：{item.response}</Text>
+          {item.responded_at && (
+            <Text style={styles.responseDate}>{new Date(item.responded_at).toLocaleDateString()}</Text>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 
@@ -578,6 +586,27 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       fontSize: fontSize.sm,
       color: c.textMuted,
       marginTop: spacing.sm,
+    },
+    responseBox: {
+      marginTop: spacing.sm,
+      padding: spacing.sm,
+      borderRadius: 8,
+      backgroundColor: c.cardBackground,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    responseUnread: {
+      backgroundColor: '#eff6ff',
+      borderColor: '#93c5fd',
+    },
+    responseText: {
+      fontSize: fontSize.sm,
+      color: c.textPrimary,
+    },
+    responseDate: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 4,
     },
   });
 }
