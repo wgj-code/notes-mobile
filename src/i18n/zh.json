@@ -57,7 +57,10 @@
     "theme": "外观",
     "themeSystem": "跟随系统",
     "themeLight": "浅色",
-    "themeDark": "深色"
+    "themeDark": "深色",
+    "feedbackButton": "反馈",
+    "feedbackButtonDesc": "显示或隐藏反馈浮动按钮。",
+    "showFeedbackButton": "显示反馈按钮"
   },
   "errors": {
     "sessionExpired": "会话已过期，请重新登录",

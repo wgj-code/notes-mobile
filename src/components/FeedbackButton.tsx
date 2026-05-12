@@ -49,8 +49,8 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
     container: {
       position: 'absolute',
-      right: 20,
-      bottom: 84,
+      left: 20,
+      bottom: 20,
       zIndex: 999,
     },
     fab: {

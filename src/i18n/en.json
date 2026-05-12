@@ -57,7 +57,10 @@
     "theme": "Appearance",
     "themeSystem": "System",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "feedbackButton": "Feedback",
+    "feedbackButtonDesc": "Show or hide the feedback floating button.",
+    "showFeedbackButton": "Show feedback button"
   },
   "errors": {
     "sessionExpired": "Session expired, please login again",

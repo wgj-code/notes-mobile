@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../stores/authStore';
 import { spacing, fontSize, borderRadius } from '../lib/theme';
 import { useThemeColors, useTheme } from '../contexts/ThemeContext';
@@ -77,6 +78,22 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           ))}
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>{t('settings.feedbackButton')}</Text>
+        <Text style={styles.value}>{t('settings.feedbackButtonDesc')}</Text>
+        <TouchableOpacity
+          style={[styles.langOption, styles.langOptionActive]}
+          onPress={async () => {
+            await AsyncStorage.removeItem('feedback-button-hidden');
+            Alert.alert(t('settings.showFeedbackButton'), t('settings.feedbackButtonDesc'));
+          }}
+        >
+          <Text style={[styles.langText, styles.langTextActive]}>
+            {t('settings.showFeedbackButton')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>
