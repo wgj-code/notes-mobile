@@ -82,17 +82,15 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <Text style={styles.label}>{t('settings.feedbackButton')}</Text>
-        <Text style={styles.value}>{t('settings.feedbackButtonDesc')}</Text>
+        <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('settings.feedbackButtonDesc')}</Text>
         <TouchableOpacity
-          style={[styles.langOption, styles.langOptionActive]}
+          style={styles.langOption}
           onPress={async () => {
             await AsyncStorage.removeItem('feedback-button-hidden');
-            Alert.alert(t('settings.showFeedbackButton'), t('settings.feedbackButtonDesc'));
+            Alert.alert('', t('settings.showFeedbackButton'));
           }}
         >
-          <Text style={[styles.langText, styles.langTextActive]}>
-            {t('settings.showFeedbackButton')}
-          </Text>
+          <Text style={styles.langText}>{t('settings.showFeedbackButton')}</Text>
         </TouchableOpacity>
       </View>
 

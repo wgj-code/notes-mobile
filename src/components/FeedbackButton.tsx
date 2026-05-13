@@ -17,9 +17,12 @@ export default function FeedbackButton({ onPress }: Props) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(FEEDBACK_HIDDEN_KEY).then((v) => {
-      if (v === 'true') setHidden(true);
+    const check = () => AsyncStorage.getItem(FEEDBACK_HIDDEN_KEY).then((v) => {
+      setHidden(v === 'true');
     });
+    check();
+    const interval = setInterval(check, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleHide = async () => {
