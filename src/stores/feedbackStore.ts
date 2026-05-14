@@ -111,6 +111,7 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
       const { data, error: insertError } = await supabase
         .from('feedback')
         .insert({
+          user_id: user.id,
           content,
           category,
           images: uploadedImages,
