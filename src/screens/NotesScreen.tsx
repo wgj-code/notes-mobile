@@ -18,6 +18,7 @@ import SearchBar from '../components/SearchBar';
 import FolderTree from '../components/FolderTree';
 import TagFilter from '../components/TagFilter';
 import SyncStatus from '../components/SyncStatus';
+import TemplatePicker from '../components/TemplatePicker';
 import type { Note } from '../types';
 import { spacing, fontSize, borderRadius } from '../lib/theme';
 import { useThemeColors } from '../contexts/ThemeContext';
@@ -41,6 +42,7 @@ export default function NotesScreen({ navigation }: any) {
 
   const [showFolders, setShowFolders] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   useEffect(() => {
     fetchNotes();
@@ -86,7 +88,11 @@ export default function NotesScreen({ navigation }: any) {
   };
 
   const handleCreate = () => {
-    navigation.navigate('NoteDetail', { noteId: null });
+    setShowTemplatePicker(true);
+  };
+
+  const handleCreateWithTemplate = (title: string, content: string) => {
+    navigation.navigate('NoteDetail', { noteId: null, templateTitle: title, templateContent: content });
   };
 
   const handleImport = async () => {
@@ -173,6 +179,13 @@ export default function NotesScreen({ navigation }: any) {
       <TouchableOpacity style={styles.fab} onPress={handleCreate}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
+
+      {/* Template picker */}
+      <TemplatePicker
+        visible={showTemplatePicker}
+        onClose={() => setShowTemplatePicker(false)}
+        onSelect={handleCreateWithTemplate}
+      />
     </View>
   );
 }

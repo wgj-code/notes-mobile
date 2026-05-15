@@ -15,6 +15,7 @@ import {
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useNotesStore } from '../stores/notesStore';
+import { useTemplateStore } from '../stores/templateStore';
 import { mapSupabaseError, getUserMessage } from '../lib/supabase-helpers';
 import MarkdownEditor from '../components/MarkdownEditor';
 import MarkdownPreview from '../components/MarkdownPreview';
@@ -27,7 +28,7 @@ type ViewMode = 'edit' | 'preview';
 
 export default function NoteDetailScreen({ route, navigation }: any) {
   const colors = useThemeColors();
-  const { noteId, note: existingNote } = route.params ?? {};
+  const { noteId, note: existingNote, templateTitle, templateContent } = route.params ?? {};
   const isEditing = !!noteId;
 
   // When navigating from a [[wiki-link]], note may be null — look up from store
@@ -35,8 +36,8 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     isEditing ? useNotesStore.getState().notes.find((n) => n.id === noteId) ?? null : null
   );
 
-  const [title, setTitle] = useState(resolvedNote?.title ?? '');
-  const [content, setContent] = useState(resolvedNote?.content ?? '');
+  const [title, setTitle] = useState(resolvedNote?.title ?? templateTitle ?? '');
+  const [content, setContent] = useState(resolvedNote?.content ?? templateContent ?? '');
   const [folderId, setFolderId] = useState<string | null>(resolvedNote?.folder_id ?? null);
   const [tags, setTags] = useState<string[]>(resolvedNote?.tags ?? []);
   const [tagInput, setTagInput] = useState('');
@@ -45,6 +46,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const [showFolderPicker, setShowFolderPicker] = useState(false);
 
   const { createNote, updateNote, deleteNote, folders, fetchFolders } = useNotesStore();
+  const { createTemplate } = useTemplateStore();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -63,6 +65,13 @@ export default function NoteDetailScreen({ route, navigation }: any) {
               </Text>
             </TouchableOpacity>
           )}
+          {isEditing && (
+            <TouchableOpacity onPress={handleSaveAsTemplate}>
+              <Text style={{ color: colors.primary, fontSize: fontSize.md }}>
+                {t('templates.saveAsTemplate')}
+              </Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={save} disabled={saving}>
             <Text style={{ color: saving ? colors.border : colors.primary, fontSize: fontSize.md }}>
               {saving ? t('notes.saving') : t('common.save')}
@@ -77,6 +86,33 @@ export default function NoteDetailScreen({ route, navigation }: any) {
       ),
     });
   }, [navigation, isEditing, saving, viewMode, title, content]);
+
+  const handleSaveAsTemplate = () => {
+    if (!content.trim()) {
+      Alert.alert(t('common.error'), t('notes.titleEmpty'));
+      return;
+    }
+    Alert.prompt(
+      t('templates.templateName'),
+      t('templates.templateNamePlaceholder'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('templates.saveTemplate'),
+          onPress: async (templateName) => {
+            if (!templateName?.trim()) return;
+            try {
+              await createTemplate(templateName.trim(), title.trim(), content);
+              Alert.alert(t('templates.saved'));
+            } catch {
+              Alert.alert(t('common.error'), t('templates.saveFailed'));
+            }
+          },
+        },
+      ],
+      'plain-text'
+    );
+  };
 
   const handleDelete = () => {
     Alert.alert(t('notes.deleteNote'), t('notes.cannotBeUndone'), [

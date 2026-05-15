@@ -35,6 +35,17 @@ export interface Feedback {
   updated_at: string;
 }
 
+export interface Template {
+  id: string;
+  user_id: string;
+  name: string;
+  title: string;
+  content: string;
+  is_builtin: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type ErrorCode =
   | 'UNAUTHORIZED'
   | 'AUTH_INVALID_CREDENTIALS'
