@@ -90,7 +90,7 @@ function NotesNavigator() {
 }
 
 export default function App() {
-  const { session, loading, init } = useAuthStore();
+  const { session, loading, authChecked, init } = useAuthStore();
 
   useEffect(() => {
     init();
@@ -108,7 +108,9 @@ export default function App() {
     <ThemeProvider>
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
-          {session ? (
+          {authChecked && !session ? (
+            <RootStack.Screen name="Auth" component={AuthNavigator} />
+          ) : (
             <>
               <RootStack.Screen name="Main" component={MainNavigator} />
               <RootStack.Screen

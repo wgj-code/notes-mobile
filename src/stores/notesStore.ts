@@ -90,12 +90,18 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         .order('updated_at', { ascending: false });
 
       if (error) {
-        set({ error: error.message, loading: false });
+        // Offline or network error: fall back to local SQLite cache
+        const localNotes = getAllLocalNotes();
+        if (localNotes.length > 0) {
+          set({ notes: localNotes as Note[], loading: false, isOnline: false });
+        } else {
+          set({ error: error.message, loading: false });
+        }
         return;
       }
 
       const notes = data as Note[];
-      set({ notes, loading: false });
+      set({ notes, loading: false, isOnline: true });
 
       // Cache locally (fire and forget)
       const { data: { user } } = await supabase.auth.getUser();
@@ -103,7 +109,13 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         upsertLocalNotes(notes.map((n) => ({ ...n, is_dirty: 0 }))).catch(() => {});
       }
     } catch (err: any) {
-      set({ error: err.message || 'Network error', loading: false });
+      // Network error: fall back to local cache
+      const localNotes = getAllLocalNotes();
+      if (localNotes.length > 0) {
+        set({ notes: localNotes as Note[], loading: false, isOnline: false });
+      } else {
+        set({ error: err.message || 'Network error', loading: false });
+      }
     }
   },
 

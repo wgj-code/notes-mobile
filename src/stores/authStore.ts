@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 interface AuthState {
   session: Session | null;
   loading: boolean;
+  authChecked: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -14,6 +15,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   loading: true,
+  authChecked: false,
 
   signIn: async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -35,11 +37,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   init: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    set({ session, loading: false });
+    // Immediately render the app — don't block on auth check
+    set({ loading: false });
 
+    // Check auth in background (non-blocking)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      set({ session, authChecked: true });
+    } catch {
+      // Offline: proceed without session, app shows cached data or login
+      set({ authChecked: true });
+    }
+
+    // Listen for auth state changes
     supabase.auth.onAuthStateChange((_event, session) => {
-      set({ session });
+      set({ session, authChecked: true });
     });
   },
 }));
