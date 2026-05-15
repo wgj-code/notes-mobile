@@ -44,7 +44,22 @@
     "addTag": "添加标签...",
     "export": "导出",
     "import": "导入",
-    "internalLink": "链接到笔记"
+    "internalLink": "链接到笔记",
+    "searchPlaceholder": "搜索笔记...",
+    "allNotes": "所有笔记",
+    "uncategorized": "未分类",
+    "folders": "文件夹",
+    "newFolder": "新建文件夹",
+    "folderName": "文件夹名称",
+    "confirmDeleteFolder": "删除此文件夹？笔记将移至未分类。",
+    "addImage": "图片",
+    "uploading": "上传中...",
+    "chars": "字符",
+    "tags": "标签（逗号分隔）",
+    "imageInvalidType": "仅支持 JPG、PNG、GIF 和 WebP 格式的图片。",
+    "imageTooLarge": "图片大小不能超过 5MB。",
+    "imageUploadFailed": "上传失败：",
+    "noMatchingNotes": "没有找到匹配的笔记"
   },
   "settings": {
     "settings": "设置",
@@ -60,7 +75,9 @@
     "themeDark": "深色",
     "feedbackButton": "反馈",
     "feedbackButtonDesc": "显示或隐藏反馈浮动按钮。",
-    "showFeedbackButton": "显示反馈按钮"
+    "showFeedbackButton": "显示反馈按钮",
+    "themeDescription": "选择界面显示外观。",
+    "hideFeedbackButton": "隐藏"
   },
   "errors": {
     "sessionExpired": "会话已过期，请重新登录",
@@ -122,6 +139,20 @@
     "statusReviewed": "已查看",
     "statusResolved": "已解决",
     "statusWontfix": "不予处理",
-    "permissionDenied": "需要麦克风权限才能录制语音"
+    "permissionDenied": "需要麦克风权限才能录制语音",
+    "myFeedback": "我的反馈",
+    "addImage": "添加图片",
+    "uploading": "上传中...",
+    "imageUploadFailed": "图片上传失败：",
+    "uploadingVoice": "上传语音中...",
+    "removeVoice": "移除",
+    "microphoneDenied": "麦克风访问被拒绝",
+    "voiceUploadFailed": "语音上传失败：",
+    "loading": "加载中...",
+    "loadFailed": "加载反馈失败",
+    "retry": "重试",
+    "sessionExpired": "会话已过期，请重新登录",
+    "dontShow": "不再显示",
+    "confirmClose": "确认关闭"
   }
 }

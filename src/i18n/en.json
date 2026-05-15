@@ -44,7 +44,22 @@
     "addTag": "Add tag...",
     "export": "Export",
     "import": "Import",
-    "internalLink": "Link to note"
+    "internalLink": "Link to note",
+    "searchPlaceholder": "Search notes...",
+    "allNotes": "All Notes",
+    "uncategorized": "Uncategorized",
+    "folders": "Folders",
+    "newFolder": "New Folder",
+    "folderName": "Folder name",
+    "confirmDeleteFolder": "Delete this folder? Notes will be moved to Uncategorized.",
+    "addImage": "Image",
+    "uploading": "Uploading...",
+    "chars": "chars",
+    "tags": "Tags (comma-separated)",
+    "imageInvalidType": "Only JPG, PNG, GIF, and WebP images are supported.",
+    "imageTooLarge": "Image must be under 5MB.",
+    "imageUploadFailed": "Upload failed: ",
+    "noMatchingNotes": "No matching notes found"
   },
   "settings": {
     "settings": "Settings",
@@ -60,7 +75,9 @@
     "themeDark": "Dark",
     "feedbackButton": "Feedback",
     "feedbackButtonDesc": "Show or hide the feedback floating button.",
-    "showFeedbackButton": "Show feedback button"
+    "showFeedbackButton": "Show feedback button",
+    "themeDescription": "Choose your preferred appearance for the interface.",
+    "hideFeedbackButton": "Hide"
   },
   "errors": {
     "sessionExpired": "Session expired, please login again",
@@ -122,6 +139,20 @@
     "statusReviewed": "Reviewed",
     "statusResolved": "Resolved",
     "statusWontfix": "Won't Fix",
-    "permissionDenied": "Microphone permission is required for voice recording"
+    "permissionDenied": "Microphone permission is required for voice recording",
+    "myFeedback": "My Feedback",
+    "addImage": "Add Image",
+    "uploading": "Uploading...",
+    "imageUploadFailed": "Image upload failed: ",
+    "uploadingVoice": "Uploading voice...",
+    "removeVoice": "Remove",
+    "microphoneDenied": "Microphone access denied",
+    "voiceUploadFailed": "Voice upload failed: ",
+    "loading": "Loading...",
+    "loadFailed": "Failed to load feedback",
+    "retry": "Retry",
+    "sessionExpired": "Session expired, please login again",
+    "dontShow": "Don't show again",
+    "confirmClose": "Confirm & Close"
   }
 }
