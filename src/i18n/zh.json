@@ -59,7 +59,22 @@
     "imageInvalidType": "仅支持 JPG、PNG、GIF 和 WebP 格式的图片。",
     "imageTooLarge": "图片大小不能超过 5MB。",
     "imageUploadFailed": "上传失败：",
-    "noMatchingNotes": "没有找到匹配的笔记"
+    "noMatchingNotes": "没有找到匹配的笔记",
+    "share": "分享",
+    "shareLink": "分享链接",
+    "shareSuccess": "笔记分享成功！",
+    "shareFailed": "分享笔记失败",
+    "recycleBin": "回收站",
+    "restoreNote": "恢复",
+    "permanentDelete": "永久删除",
+    "confirmPermanentDelete": "永久删除「{{title}}」？此操作不可撤销。",
+    "noteRestored": "笔记已恢复",
+    "notePermanentlyDeleted": "笔记已永久删除",
+    "restoreFailed": "恢复笔记失败",
+    "deleteFailedPermanent": "删除笔记失败",
+    "noDeletedNotes": "没有已删除的笔记",
+    "recycleBinContent": "移至回收站的笔记会显示在这里",
+    "graph": "图谱"
   },
   "settings": {
     "settings": "设置",
@@ -77,7 +92,13 @@
     "feedbackButtonDesc": "显示或隐藏反馈浮动按钮。",
     "showFeedbackButton": "显示反馈按钮",
     "themeDescription": "选择界面显示外观。",
-    "hideFeedbackButton": "隐藏"
+    "hideFeedbackButton": "隐藏",
+    "exportAll": "导出所有笔记",
+    "exportAllDesc": "将所有笔记导出为 Markdown 文件",
+    "exporting": "导出中...",
+    "exportSuccess": "笔记导出成功！",
+    "exportFailed": "笔记导出失败",
+    "noNotesToExport": "没有可导出的笔记"
   },
   "errors": {
     "sessionExpired": "会话已过期，请重新登录",

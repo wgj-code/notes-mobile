@@ -1,7 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useAuthStore } from '../stores/authStore';
+import { useNotesStore } from '../stores/notesStore';
 import { spacing, fontSize, borderRadius } from '../lib/theme';
 import { useThemeColors, useTheme } from '../contexts/ThemeContext';
 import { t, getLanguage, setLanguage } from '../i18n';
@@ -17,6 +20,7 @@ export default function SettingsScreen() {
   const colors = useThemeColors();
   const { mode: themeMode, setMode: setThemeMode } = useTheme();
   const { session, signOut } = useAuthStore();
+  const { notes } = useNotesStore();
   const [lang, setLang] = useState<'en' | 'zh'>(getLanguage() as 'en' | 'zh');
 
   const styles = makeStyles(colors);
@@ -33,6 +37,33 @@ export default function SettingsScreen() {
     await setLanguage(newLang);
     setLang(newLang);
   }, [lang]);
+
+  const handleExportAll = useCallback(async () => {
+    if (notes.length === 0) {
+      Alert.alert('', t('settings.noNotesToExport'));
+      return;
+    }
+    try {
+      const dir = `${FileSystem.cacheDirectory}notes_export/`;
+      await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+
+      for (const note of notes) {
+        const safeTitle = (note.title || 'untitled').replace(/[/\\?%*:|"<>]/g, '-');
+        const markdown = `# ${note.title}\n\n${note.content}`;
+        await FileSystem.writeAsStringAsync(`${dir}${safeTitle}.md`, markdown, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+      }
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(dir);
+      } else {
+        Alert.alert(t('settings.exportAll'), t('common.error'));
+      }
+    } catch {
+      Alert.alert(t('settings.exportAll'), t('settings.exportFailed'));
+    }
+  }, [notes]);
 
   return (
     <View style={styles.container}>
@@ -91,6 +122,14 @@ export default function SettingsScreen() {
           }}
         >
           <Text style={styles.langText}>{t('settings.showFeedbackButton')}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>{t('settings.exportAll')}</Text>
+        <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('settings.exportAllDesc')}</Text>
+        <TouchableOpacity style={styles.langOption} onPress={handleExportAll}>
+          <Text style={styles.langText}>{t('settings.exportAll')}</Text>
         </TouchableOpacity>
       </View>
 

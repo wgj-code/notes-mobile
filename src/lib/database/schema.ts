@@ -39,6 +39,7 @@ async function initTables(db: SQLite.SQLiteDatabase): Promise<void> {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       deleted_at TEXT,
+      shared INTEGER DEFAULT 0,
       is_dirty INTEGER DEFAULT 0,
       FOREIGN KEY (folder_id) REFERENCES local_folders(id)
     );

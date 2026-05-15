@@ -59,7 +59,22 @@
     "imageInvalidType": "Only JPG, PNG, GIF, and WebP images are supported.",
     "imageTooLarge": "Image must be under 5MB.",
     "imageUploadFailed": "Upload failed: ",
-    "noMatchingNotes": "No matching notes found"
+    "noMatchingNotes": "No matching notes found",
+    "share": "Share",
+    "shareLink": "Share Link",
+    "shareSuccess": "Note shared successfully!",
+    "shareFailed": "Failed to share note",
+    "recycleBin": "Recycle Bin",
+    "restoreNote": "Restore",
+    "permanentDelete": "Permanently Delete",
+    "confirmPermanentDelete": "Permanently delete \"{{title}}\"? This cannot be undone.",
+    "noteRestored": "Note restored",
+    "notePermanentlyDeleted": "Note permanently deleted",
+    "restoreFailed": "Failed to restore note",
+    "deleteFailedPermanent": "Failed to delete note",
+    "noDeletedNotes": "No deleted notes",
+    "recycleBinContent": "Notes moved to trash will appear here",
+    "graph": "Graph"
   },
   "settings": {
     "settings": "Settings",
@@ -77,7 +92,13 @@
     "feedbackButtonDesc": "Show or hide the feedback floating button.",
     "showFeedbackButton": "Show feedback button",
     "themeDescription": "Choose your preferred appearance for the interface.",
-    "hideFeedbackButton": "Hide"
+    "hideFeedbackButton": "Hide",
+    "exportAll": "Export All Notes",
+    "exportAllDesc": "Export all notes as Markdown files",
+    "exporting": "Exporting...",
+    "exportSuccess": "Notes exported successfully!",
+    "exportFailed": "Failed to export notes",
+    "noNotesToExport": "No notes to export"
   },
   "errors": {
     "sessionExpired": "Session expired, please login again",

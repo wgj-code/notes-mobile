@@ -6,8 +6,8 @@ import type { Note, Folder } from '../../types';
 export async function upsertLocalNote(note: Note & { is_dirty?: number }): Promise<void> {
   const db = await getDatabase();
   await db.runAsync(
-    `INSERT OR REPLACE INTO local_notes (id, user_id, title, content, folder_id, tags, created_at, updated_at, deleted_at, is_dirty)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT OR REPLACE INTO local_notes (id, user_id, title, content, folder_id, tags, created_at, updated_at, deleted_at, shared, is_dirty)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       note.id,
       note.user_id,
@@ -18,6 +18,7 @@ export async function upsertLocalNote(note: Note & { is_dirty?: number }): Promi
       note.created_at,
       note.updated_at,
       note.deleted_at ?? null,
+      note.shared ? 1 : 0,
       note.is_dirty ?? 0,
     ]
   );
@@ -26,8 +27,8 @@ export async function upsertLocalNote(note: Note & { is_dirty?: number }): Promi
 export async function upsertLocalNotes(notes: (Note & { is_dirty?: number })[]): Promise<void> {
   const db = await getDatabase();
   const stmt = await db.prepareAsync(
-    `INSERT OR REPLACE INTO local_notes (id, user_id, title, content, folder_id, tags, created_at, updated_at, deleted_at, is_dirty)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT OR REPLACE INTO local_notes (id, user_id, title, content, folder_id, tags, created_at, updated_at, deleted_at, shared, is_dirty)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   try {
     for (const note of notes) {
@@ -41,6 +42,7 @@ export async function upsertLocalNotes(notes: (Note & { is_dirty?: number })[]):
         note.created_at,
         note.updated_at,
         note.deleted_at ?? null,
+        note.shared ? 1 : 0,
         note.is_dirty ?? 0,
       ]);
     }
@@ -53,6 +55,15 @@ export async function getAllLocalNotes(userId: string): Promise<Note[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<any>(
     `SELECT * FROM local_notes WHERE user_id = ? AND deleted_at IS NULL ORDER BY updated_at DESC`,
+    [userId]
+  );
+  return rows.map(mapRowToNote);
+}
+
+export async function getAllLocalDeletedNotes(userId: string): Promise<Note[]> {
+  const db = await getDatabase();
+  const rows = await db.getAllAsync<any>(
+    `SELECT * FROM local_notes WHERE user_id = ? AND deleted_at IS NOT NULL ORDER BY deleted_at DESC`,
     [userId]
   );
   return rows.map(mapRowToNote);
@@ -172,6 +183,7 @@ function mapRowToNote(row: any): Note {
     created_at: row.created_at,
     updated_at: row.updated_at,
     deleted_at: row.deleted_at ?? null,
+    shared: row.shared === 1,
   };
 }
 

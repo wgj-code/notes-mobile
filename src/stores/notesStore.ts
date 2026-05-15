@@ -33,6 +33,15 @@ interface NotesState {
   updateNote: (id: string, title: string, content: string, folderId?: string | null, tags?: string[]) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
 
+  // Recycle bin
+  fetchDeletedNotes: () => Promise<void>;
+  deletedNotes: Note[];
+  restoreNote: (id: string) => Promise<void>;
+  permanentDeleteNote: (id: string) => Promise<void>;
+
+  // Sharing
+  shareNote: (id: string) => Promise<void>;
+
   fetchFolders: () => Promise<void>;
   createFolder: (name: string, parentId?: string | null) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
@@ -47,6 +56,7 @@ interface NotesState {
 
 export const useNotesStore = create<NotesState>((set, get) => ({
   notes: [],
+  deletedNotes: [],
   folders: [],
   loading: false,
   error: null,
@@ -195,6 +205,71 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       deleteLocalNote(id).catch(() => {});
     }
     set({ notes: get().notes.filter((n) => n.id !== id) });
+  },
+
+  // ── Recycle Bin ────────────────────────────────────────────────────────
+
+  fetchDeletedNotes: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+      if (error) throw error;
+      set({ deletedNotes: (data ?? []) as Note[] });
+    } catch {
+      set({ deletedNotes: [] });
+    }
+  },
+
+  restoreNote: async (id) => {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .update({ deleted_at: null })
+        .eq('id', id);
+      if (error) throw error;
+      set({
+        deletedNotes: get().deletedNotes.filter((n) => n.id !== id),
+      });
+    } catch {
+      // ignore
+    }
+  },
+
+  permanentDeleteNote: async (id) => {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    } catch {
+      deleteLocalNote(id).catch(() => {});
+    }
+    set({
+      deletedNotes: get().deletedNotes.filter((n) => n.id !== id),
+    });
+  },
+
+  // ── Sharing ────────────────────────────────────────────────────────────
+
+  shareNote: async (id) => {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .update({ shared: true })
+        .eq('id', id);
+      if (error) throw error;
+    } catch {
+      // ignore - sharing is optional
+    }
+    set({
+      notes: get().notes.map((n) =>
+        n.id === id ? { ...n, shared: true } : n
+      ),
+    });
   },
 
   // ── Folders ──────────────────────────────────────────────────────────

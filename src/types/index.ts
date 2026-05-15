@@ -8,6 +8,7 @@ export interface Note {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  shared?: boolean;
 }
 
 export interface Folder {

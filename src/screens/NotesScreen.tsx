@@ -139,7 +139,7 @@ export default function NotesScreen({ navigation }: any) {
       {/* Search bar */}
       <SearchBar />
 
-      {/* Sync status + folder toggle + import */}
+      {/* Sync status + folder toggle + import + recycle bin + graph */}
       <View style={styles.toolbarRow}>
         <TouchableOpacity
           style={styles.folderToggle}
@@ -149,8 +149,20 @@ export default function NotesScreen({ navigation }: any) {
             {showFolders ? t('folder.hideFolders') : t('folder.showFolders')}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.importButton} onPress={handleImport}>
-          <Text style={styles.importButtonText}>{t('notes.import')}</Text>
+        <TouchableOpacity style={styles.toolbarAction} onPress={handleImport}>
+          <Text style={styles.toolbarActionText}>{t('notes.import')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.toolbarAction}
+          onPress={() => navigation.navigate('RecycleBin')}
+        >
+          <Text style={styles.toolbarActionText}>{t('notes.recycleBin')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.toolbarAction}
+          onPress={() => navigation.navigate('Graph')}
+        >
+          <Text style={styles.toolbarActionText}>{t('notes.graph')}</Text>
         </TouchableOpacity>
         <SyncStatus />
       </View>
@@ -225,10 +237,10 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       color: c.primary,
       fontWeight: '500',
     },
-    importButton: {
+    toolbarAction: {
       paddingVertical: spacing.xs,
     },
-    importButtonText: {
+    toolbarActionText: {
       fontSize: fontSize.md,
       color: c.primary,
       fontWeight: '500',

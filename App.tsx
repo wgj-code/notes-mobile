@@ -9,6 +9,8 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import NotesScreen from './src/screens/NotesScreen';
 import NoteDetailScreen from './src/screens/NoteDetailScreen';
+import RecycleBinScreen from './src/screens/RecycleBinScreen';
+import GraphScreen from './src/screens/GraphScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import FeedbackScreen from './src/screens/FeedbackScreen';
 import FeedbackButton from './src/components/FeedbackButton';
@@ -84,6 +86,16 @@ function NotesNavigator() {
         name="NoteDetail"
         component={NoteDetailScreen}
         options={() => ({ title: t('notes.note') })}
+      />
+      <NotesStack.Screen
+        name="RecycleBin"
+        component={RecycleBinScreen}
+        options={() => ({ title: t('notes.recycleBin') })}
+      />
+      <NotesStack.Screen
+        name="Graph"
+        component={GraphScreen}
+        options={() => ({ title: t('notes.graph') })}
       />
     </NotesStack.Navigator>
   );

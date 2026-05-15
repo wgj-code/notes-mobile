@@ -45,7 +45,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const [viewMode, setViewMode] = useState<ViewMode>('edit');
   const [showFolderPicker, setShowFolderPicker] = useState(false);
 
-  const { createNote, updateNote, deleteNote, folders, fetchFolders } = useNotesStore();
+  const { createNote, updateNote, deleteNote, folders, fetchFolders, shareNote } = useNotesStore();
   const { createTemplate } = useTemplateStore();
 
   useLayoutEffect(() => {
@@ -58,6 +58,13 @@ export default function NoteDetailScreen({ route, navigation }: any) {
               {viewMode === 'edit' ? t('notes.preview') : t('notes.edit')}
             </Text>
           </TouchableOpacity>
+          {isEditing && (
+            <TouchableOpacity onPress={handleShare}>
+              <Text style={{ color: colors.primary, fontSize: fontSize.md }}>
+                {t('notes.share')}
+              </Text>
+            </TouchableOpacity>
+          )}
           {isEditing && (
             <TouchableOpacity onPress={handleExport}>
               <Text style={{ color: colors.primary, fontSize: fontSize.md }}>
@@ -169,6 +176,22 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const handleImageUploaded = (url: string) => {
     const imageMarkdown = `\n![image](${url})\n`;
     setContent(content + imageMarkdown);
+  };
+
+  const handleShare = async () => {
+    if (!isEditing || !noteId) return;
+    try {
+      await shareNote(noteId);
+      const shareUrl = `https://waveletvolt.xin/share/${noteId}`;
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(shareUrl);
+      } else {
+        Alert.alert(t('notes.shareLink'), shareUrl);
+      }
+      Alert.alert('', t('notes.shareSuccess'));
+    } catch {
+      Alert.alert(t('common.error'), t('notes.shareFailed'));
+    }
   };
 
   const handleExport = async () => {
