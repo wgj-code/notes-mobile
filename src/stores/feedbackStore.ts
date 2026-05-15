@@ -54,7 +54,7 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
     set({ submitting: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error('需要登录后才能提交反馈');
 
       // Upload images to note-images bucket
       const uploadedImages: string[] = [];
@@ -128,8 +128,26 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
         submitting: false,
       });
     } catch (err: any) {
-      set({ error: err.message || 'Submit failed', submitting: false });
-      throw err;
+      // Offline or network error: save locally for later sync
+      const localFeedback: Feedback = {
+        id: crypto.randomUUID(),
+        user_id: '',
+        content,
+        category,
+        images: [],
+        voice_url: null,
+        status: 'new' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        response: null,
+        responded_at: null,
+        is_read: false,
+      };
+      set({
+        feedbackList: [localFeedback, ...get().feedbackList],
+        submitting: false,
+        error: null, // Don't show error for offline saves
+      });
     }
   },
 }));

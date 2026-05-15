@@ -123,8 +123,6 @@ export default function App() {
                 }}
               />
             </>
-          ) : (
-            <RootStack.Screen name="Auth" component={AuthNavigator} />
           )}
         </RootStack.Navigator>
       </NavigationContainer>

@@ -18,21 +18,39 @@ export const useAuthStore = create<AuthState>((set) => ({
   authChecked: false,
 
   signIn: async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    const { data: { session } } = await supabase.auth.getSession();
-    set({ session });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const { data: { session } } = await supabase.auth.getSession();
+      set({ session });
+    } catch (err: any) {
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        throw new Error('需要网络才能登录，请检查网络连接后重试');
+      }
+      throw err;
+    }
   },
 
   signUp: async (email, password) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
-    const { data: { session } } = await supabase.auth.getSession();
-    set({ session });
+    try {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      const { data: { session } } = await supabase.auth.getSession();
+      set({ session });
+    } catch (err: any) {
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        throw new Error('需要网络才能注册，请检查网络连接后重试');
+      }
+      throw err;
+    }
   },
 
   signOut: async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Offline: clear local session anyway
+    }
     set({ session: null });
   },
 

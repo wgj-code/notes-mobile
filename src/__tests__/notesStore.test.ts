@@ -88,13 +88,15 @@ describe('notesStore', () => {
       expect(useNotesStore.getState().notes).toContainEqual(mockNote);
     });
 
-    it('throws on failure', async () => {
+    it('creates locally when API fails (offline fallback)', async () => {
       const q = makeQuery({
         single: jest.fn().mockResolvedValue({ data: null, error: { message: 'fail' } }),
       });
       (supabase.from as jest.Mock).mockReturnValue(q);
 
-      await expect(useNotesStore.getState().createNote('T', 'C')).rejects.toBeDefined();
+      const note = await useNotesStore.getState().createNote('T', 'C');
+      expect(note).toBeDefined();
+      expect(note.title).toBe('T');
     });
   });
 
@@ -108,13 +110,15 @@ describe('notesStore', () => {
       expect(useNotesStore.getState().notes[0].title).toBe('Updated');
     });
 
-    it('throws on failure', async () => {
+    it('updates locally when API fails (offline fallback)', async () => {
+      useNotesStore.setState({ notes: [mockNote] });
       const q = makeQuery({
         eq: jest.fn().mockResolvedValue({ error: { message: 'fail' } }),
       });
       (supabase.from as jest.Mock).mockReturnValue(q);
 
-      await expect(useNotesStore.getState().updateNote('n1', 'T', 'C')).rejects.toBeDefined();
+      await useNotesStore.getState().updateNote('n1', 'Updated', 'New');
+      expect(useNotesStore.getState().notes[0].title).toBe('Updated');
     });
 
     it('does not change other notes', async () => {
@@ -137,10 +141,12 @@ describe('notesStore', () => {
       expect(useNotesStore.getState().notes).toHaveLength(0);
     });
 
-    it('throws on failure', async () => {
+    it('deletes locally when API fails (offline fallback)', async () => {
+      useNotesStore.setState({ notes: [mockNote] });
       (supabase.rpc as jest.Mock).mockResolvedValue({ error: { message: 'fail' } });
 
-      await expect(useNotesStore.getState().deleteNote('n1')).rejects.toBeDefined();
+      await useNotesStore.getState().deleteNote('n1');
+      expect(useNotesStore.getState().notes).toHaveLength(0);
     });
 
     it('preserves other notes', async () => {

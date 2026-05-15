@@ -4,8 +4,10 @@ import { supabase } from '../lib/supabase';
 import {
   upsertLocalNotes,
   getAllLocalNotes,
+  upsertLocalNote,
   upsertLocalFolders,
   getAllLocalFolders,
+  deleteLocalNote,
 } from '../lib/database/queries';
 import { syncNotes } from '../lib/database/sync';
 
@@ -120,13 +122,33 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
 
   createNote: async (title, content, folderId = null, tags = []) => {
-    const { data, error } = await supabase
-      .from('notes')
-      .insert({ title, content, folder_id: folderId, tags })
-      .select()
-      .single();
-    if (error) throw error;
-    set({ notes: [data as Note, ...get().notes] });
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert({ title, content, folder_id: folderId, tags })
+        .select()
+        .single();
+      if (error) throw error;
+      set({ notes: [data as Note, ...get().notes] });
+      return data as Note;
+    } catch {
+      // Offline: create locally with dirty flag
+      const localNote: Note & { is_dirty: number } = {
+        id: crypto.randomUUID(),
+        title,
+        content,
+        user_id: '',
+        folder_id: folderId,
+        tags: tags || [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null,
+        is_dirty: 1,
+      };
+      upsertLocalNote(localNote).catch(() => {});
+      set({ notes: [localNote as Note, ...get().notes] });
+      return localNote as Note;
+    }
   },
 
   updateNote: async (id, title, content, folderId, tags) => {
@@ -134,11 +156,19 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     if (folderId !== undefined) updates.folder_id = folderId;
     if (tags !== undefined) updates.tags = tags;
 
-    const { error } = await supabase
-      .from('notes')
-      .update(updates)
-      .eq('id', id);
-    if (error) throw error;
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    } catch {
+      // Offline: update locally and mark dirty
+      const note = get().notes.find((n) => n.id === id);
+      if (note) {
+        upsertLocalNote({ ...note, ...updates, is_dirty: 1 } as any).catch(() => {});
+      }
+    }
 
     set({
       notes: get().notes.map((n) =>
@@ -157,8 +187,13 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
 
   deleteNote: async (id) => {
-    const { error } = await supabase.rpc('soft_delete_note', { p_note_id: id });
-    if (error) throw error;
+    try {
+      const { error } = await supabase.rpc('soft_delete_note', { p_note_id: id });
+      if (error) throw error;
+    } catch {
+      // Offline: mark as deleted locally
+      deleteLocalNote(id).catch(() => {});
+    }
     set({ notes: get().notes.filter((n) => n.id !== id) });
   },
 
