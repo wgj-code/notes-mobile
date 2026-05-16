@@ -100,7 +100,9 @@
     "exporting": "Exporting...",
     "exportSuccess": "Notes exported successfully!",
     "exportFailed": "Failed to export notes",
-    "noNotesToExport": "No notes to export"
+    "noNotesToExport": "No notes to export",
+    "about": "About",
+    "version": "Version"
   },
   "errors": {
     "sessionExpired": "Session expired, please login again",

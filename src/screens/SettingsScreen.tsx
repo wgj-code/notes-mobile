@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import Constants from 'expo-constants';
 import { useAuthStore } from '../stores/authStore';
 import { useNotesStore } from '../stores/notesStore';
 import { spacing, fontSize, borderRadius } from '../lib/theme';
@@ -131,6 +132,11 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.langOption} onPress={handleExportAll}>
           <Text style={styles.langText}>{t('settings.exportAll')}</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>{t('settings.about')}</Text>
+        <Text style={styles.value}>{t('settings.version')} {Constants.expoConfig?.version ?? '0.1.0'}</Text>
       </View>
 
       <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>

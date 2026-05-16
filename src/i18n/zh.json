@@ -100,7 +100,9 @@
     "exporting": "导出中...",
     "exportSuccess": "笔记导出成功！",
     "exportFailed": "笔记导出失败",
-    "noNotesToExport": "没有可导出的笔记"
+    "noNotesToExport": "没有可导出的笔记",
+    "about": "关于",
+    "version": "版本"
   },
   "errors": {
     "sessionExpired": "会话已过期，请重新登录",
