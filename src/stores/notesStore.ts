@@ -211,11 +211,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
   fetchDeletedNotes: async () => {
     try {
-      const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .not('deleted_at', 'is', null)
-        .order('deleted_at', { ascending: false });
+      const { data, error } = await supabase.rpc('fetch_deleted_notes');
       if (error) throw error;
       set({ deletedNotes: (data ?? []) as Note[] });
     } catch {
