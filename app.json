@@ -33,6 +33,7 @@
     "plugins": [
       "expo-sqlite",
       "expo-secure-store"
-    ]
+    ],
+    "owner": "wgj-code"
   }
 }
