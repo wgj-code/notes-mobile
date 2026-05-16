@@ -221,11 +221,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
   restoreNote: async (id) => {
     try {
-      const { error } = await supabase
-        .from('notes')
-        .update({ deleted_at: null })
-        .eq('id', id);
+      const { error } = await supabase.rpc('restore_note', { p_note_id: id });
       if (error) throw error;
+      // Refresh notes list to show restored note
+      get().fetchNotes();
       set({
         deletedNotes: get().deletedNotes.filter((n) => n.id !== id),
       });
