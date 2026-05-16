@@ -235,10 +235,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
   permanentDeleteNote: async (id) => {
     try {
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.rpc('permanent_delete_note', { p_note_id: id });
       if (error) throw error;
     } catch {
       deleteLocalNote(id).catch(() => {});
