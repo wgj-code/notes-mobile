@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   View,
   TextInput,
@@ -41,9 +41,39 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const [folderId, setFolderId] = useState<string | null>(resolvedNote?.folder_id ?? null);
   const [tags, setTags] = useState<string[]>(resolvedNote?.tags ?? []);
   const [tagInput, setTagInput] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [viewMode, setViewMode] = useState<ViewMode>('edit');
   const [showFolderPicker, setShowFolderPicker] = useState(false);
+  const [lastSavedContent, setLastSavedContent] = useState(resolvedNote?.content ?? templateContent ?? '');
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save with debounce (2 seconds after last edit)
+  useEffect(() => {
+    if (!noteId || content === lastSavedContent) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(async () => {
+      const trimmedTitle = title.trim();
+      if (!trimmedTitle) return;
+      setSaveStatus('saving');
+      try {
+        await updateNote(noteId, trimmedTitle, content, folderId, tags);
+        setLastSavedContent(content);
+        setSaveStatus('saved');
+      } catch {
+        setSaveStatus('idle');
+      }
+    }, 2000);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [content, title, tags, folderId, noteId, lastSavedContent, updateNote]);
 
   const { createNote, updateNote, deleteNote, folders, fetchFolders, shareNote } = useNotesStore();
   const { createTemplate } = useTemplateStore();
@@ -79,9 +109,14 @@ export default function NoteDetailScreen({ route, navigation }: any) {
               </Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={save} disabled={saving}>
-            <Text style={{ color: saving ? colors.border : colors.primary, fontSize: fontSize.md }}>
-              {saving ? t('notes.saving') : t('common.save')}
+          {saveStatus === 'saved' && (
+            <Text style={{ color: colors.success || '#22c55e', fontSize: fontSize.sm, marginRight: 8 }}>
+              ✓ {t('notes.autoSaved')}
+            </Text>
+          )}
+          <TouchableOpacity onPress={saveAndClose}>
+            <Text style={{ color: colors.primary, fontSize: fontSize.md }}>
+              {t('notes.saveAndClose')}
             </Text>
           </TouchableOpacity>
           {isEditing && (
@@ -92,7 +127,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
         </View>
       ),
     });
-  }, [navigation, isEditing, saving, viewMode, title, content]);
+  }, [navigation, isEditing, saveStatus, viewMode, title, content]);
 
   const handleSaveAsTemplate = () => {
     if (!content.trim()) {
@@ -139,13 +174,13 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     ]);
   };
 
-  const save = async () => {
+  const saveAndClose = async () => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
       Alert.alert(t('common.error'), t('notes.titleEmpty'));
       return;
     }
-    setSaving(true);
+    setSaveStatus('saving');
     try {
       if (isEditing) {
         await updateNote(noteId, trimmedTitle, content, folderId, tags);
@@ -157,7 +192,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
       const code = mapSupabaseError(error);
       Alert.alert(t('notes.saveFailed'), getUserMessage(code));
     } finally {
-      setSaving(false);
+      setSaveStatus('idle');
     }
   };
 

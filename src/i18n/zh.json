@@ -74,7 +74,9 @@
     "deleteFailedPermanent": "删除笔记失败",
     "noDeletedNotes": "没有已删除的笔记",
     "recycleBinContent": "移至回收站的笔记会显示在这里",
-    "graph": "图谱"
+    "graph": "图谱",
+    "autoSaved": "已自动保存",
+    "saveAndClose": "保存并返回"
   },
   "settings": {
     "settings": "设置",

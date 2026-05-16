@@ -74,7 +74,9 @@
     "deleteFailedPermanent": "Failed to delete note",
     "noDeletedNotes": "No deleted notes",
     "recycleBinContent": "Notes moved to trash will appear here",
-    "graph": "Graph"
+    "graph": "Graph",
+    "autoSaved": "Auto-saved",
+    "saveAndClose": "Save & Close"
   },
   "settings": {
     "settings": "Settings",
