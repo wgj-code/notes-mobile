@@ -45,19 +45,15 @@ export default function SettingsScreen() {
       return;
     }
     try {
-      const dir = `${FileSystem.cacheDirectory}notes_export/`;
-      await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
-
-      for (const note of notes) {
-        const safeTitle = (note.title || 'untitled').replace(/[/\\?%*:|"<>]/g, '-');
-        const markdown = `# ${note.title}\n\n${note.content}`;
-        await FileSystem.writeAsStringAsync(`${dir}${safeTitle}.md`, markdown, {
-          encoding: FileSystem.EncodingType.UTF8,
-        });
-      }
-
+      const combined = notes
+        .map((note) => `# ${note.title}\n\n${note.content}`)
+        .join('\n\n---\n\n');
+      const filePath = `${FileSystem.cacheDirectory}notes-export.md`;
+      await FileSystem.writeAsStringAsync(filePath, combined, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(dir);
+        await Sharing.shareAsync(filePath);
       } else {
         Alert.alert(t('settings.exportAll'), t('common.error'));
       }
