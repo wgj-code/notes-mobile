@@ -1,9 +1,10 @@
 {
   "name": "notes-mobile",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
   "scripts": {
+    "version:bump": "./scripts/bump-version.sh",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
