@@ -111,22 +111,33 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.label}>{t('settings.feedbackButton')}</Text>
         <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('settings.feedbackButtonDesc')}</Text>
-        <TouchableOpacity
-          style={styles.langOption}
-          onPress={async () => {
-            await AsyncStorage.removeItem('feedback-button-hidden');
-            Alert.alert('', t('settings.showFeedbackButton'));
-          }}
-        >
-          <Text style={styles.langText}>{t('settings.showFeedbackButton')}</Text>
-        </TouchableOpacity>
+        <View style={styles.languageRow}>
+          <TouchableOpacity
+            style={styles.langOption}
+            onPress={async () => {
+              await AsyncStorage.removeItem('feedback-button-hidden');
+              Alert.alert('', t('settings.showFeedbackButton'));
+            }}
+          >
+            <Text style={styles.langText}>{t('settings.showFeedbackButton')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.langOption}
+            onPress={async () => {
+              await AsyncStorage.setItem('feedback-button-hidden', 'true');
+              Alert.alert('', t('settings.hideFeedbackButton'));
+            }}
+          >
+            <Text style={styles.langText}>{t('settings.hideFeedbackButton')}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.label}>{t('settings.exportAll')}</Text>
         <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('settings.exportAllDesc')}</Text>
-        <TouchableOpacity style={styles.langOption} onPress={handleExportAll}>
-          <Text style={styles.langText}>{t('settings.exportAll')}</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={handleExportAll}>
+          <Text style={styles.actionButtonText}>{t('settings.exportAll')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -172,6 +183,17 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
     },
     langTextActive: {
       color: c.primary,
+      fontWeight: '600',
+    },
+    actionButton: {
+      backgroundColor: c.primary,
+      borderRadius: borderRadius.sm,
+      padding: spacing.lg,
+      alignItems: 'center',
+    },
+    actionButtonText: {
+      color: '#ffffff',
+      fontSize: fontSize.md,
       fontWeight: '600',
     },
     dangerButton: {
