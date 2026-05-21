@@ -217,6 +217,9 @@
     "slow": "慢速",
     "normal": "正常",
     "fast": "快速",
-    "noNotes": "没有可朗读的笔记"
+    "noNotes": "没有可朗读的笔记",
+    "voiceHost": "成熟男主持",
+    "voiceGirl": "东北老妹",
+    "voiceLady": "御姐"
   }
 }

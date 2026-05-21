@@ -217,6 +217,9 @@
     "slow": "Slow",
     "normal": "Normal",
     "fast": "Fast",
-    "noNotes": "No notes to read"
+    "noNotes": "No notes to read",
+    "voiceHost": "Mature Host",
+    "voiceGirl": "Lively Girl",
+    "voiceLady": "Elegant Lady"
   }
 }

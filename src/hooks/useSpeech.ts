@@ -3,11 +3,18 @@ import * as Speech from 'expo-speech';
 
 export type PlayMode = 'sequential' | 'random' | 'loop';
 export type SpeechRate = 'slow' | 'normal' | 'fast';
+export type SpeechVoice = 'host' | 'girl' | 'lady';
 
 const RATE_MAP: Record<SpeechRate, number> = {
   slow: 0.5,
   normal: 1.0,
   fast: 1.5,
+};
+
+const VOICE_MAP: Record<SpeechVoice, string> = {
+  host: 'zh-CN-YunxiNeural',
+  girl: 'zh-CN-XiaoxiaoNeural',
+  lady: 'zh-CN-XiaohanNeural',
 };
 
 interface Note {
@@ -21,6 +28,7 @@ export function useSpeech(notes: Note[]) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mode, setMode] = useState<PlayMode>('sequential');
   const [rate, setRate] = useState<SpeechRate>('normal');
+  const [voice, setVoice] = useState<SpeechVoice>('host');
   const isSpeakingRef = useRef(false);
 
   useEffect(() => {
@@ -40,11 +48,11 @@ export function useSpeech(notes: Note[]) {
 
     Speech.speak(text, {
       rate: RATE_MAP[rate],
+      voice: VOICE_MAP[voice],
       language: 'zh-CN',
       onDone: () => {
         isSpeakingRef.current = false;
         setIsPlaying(false);
-        // Auto-advance based on mode
         if (mode === 'loop') {
           playNote(index);
         } else if (mode === 'sequential' && index < notes.length - 1) {
@@ -55,7 +63,7 @@ export function useSpeech(notes: Note[]) {
         }
       },
     });
-  }, [notes, rate, mode]);
+  }, [notes, rate, mode, voice]);
 
   const togglePlay = useCallback(() => {
     if (isPlaying) {
@@ -91,8 +99,10 @@ export function useSpeech(notes: Note[]) {
     currentIndex,
     mode,
     rate,
+    voice,
     setMode,
     setRate,
+    setVoice,
     togglePlay,
     playPrev,
     playNext,

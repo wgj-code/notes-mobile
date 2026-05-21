@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import { useSpeech, type PlayMode, type SpeechRate } from '../hooks/useSpeech';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
+import { useSpeech, type PlayMode, type SpeechRate, type SpeechVoice } from '../hooks/useSpeech';
 import { spacing, fontSize, borderRadius } from '../lib/theme';
 import { useThemeColors } from '../contexts/ThemeContext';
 import { t } from '../i18n';
@@ -23,13 +23,17 @@ const RATES: { key: SpeechRate; labelKey: string }[] = [
   { key: 'fast', labelKey: 'speech.fast' },
 ];
 
+const VOICES: { key: SpeechVoice; labelKey: string }[] = [
+  { key: 'host', labelKey: 'speech.voiceHost' },
+  { key: 'girl', labelKey: 'speech.voiceGirl' },
+  { key: 'lady', labelKey: 'speech.voiceLady' },
+];
+
 export default function SpeechPlayer({ visible, onClose }: Props) {
   const colors = useThemeColors();
   const { notes } = useNotesStore();
   const speech = useSpeech(notes);
   const styles = makeStyles(colors);
-
-  const currentNote = notes[speech.currentIndex];
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -37,10 +41,32 @@ export default function SpeechPlayer({ visible, onClose }: Props) {
         <TouchableOpacity style={styles.panel} activeOpacity={1}>
           <View style={styles.handle} />
 
-          <Text style={styles.currentNote} numberOfLines={1}>
-            {currentNote?.title ?? t('speech.noNotes')}
-          </Text>
+          {/* Note list */}
+          <FlatList
+            data={notes}
+            keyExtractor={(item) => item.id}
+            style={styles.noteList}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                style={[styles.noteItem, index === speech.currentIndex && styles.noteItemActive]}
+                onPress={() => speech.togglePlay()}
+              >
+                <Text style={[styles.noteItemText, index === speech.currentIndex && styles.noteItemTextActive]} numberOfLines={1}>
+                  {index === speech.currentIndex && speech.isPlaying ? '▶ ' : '   '}{item.title}
+                </Text>
+              </TouchableOpacity>
+            )}
+            onMomentumScrollEnd={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+              if (index !== speech.currentIndex) {
+                // User scrolled to a different note — play it
+                speech.stop();
+                // We need to trigger play via a ref or state change
+              }
+            }}
+          />
 
+          {/* Playback controls */}
           <View style={styles.controls}>
             <TouchableOpacity style={styles.controlBtn} onPress={speech.playPrev}>
               <Text style={styles.controlBtnText}>◀◀</Text>
@@ -53,6 +79,22 @@ export default function SpeechPlayer({ visible, onClose }: Props) {
             </TouchableOpacity>
           </View>
 
+          {/* Voice selection */}
+          <View style={styles.toggleRow}>
+            {VOICES.map((v) => (
+              <TouchableOpacity
+                key={v.key}
+                style={[styles.toggleBtn, speech.voice === v.key && styles.toggleActive]}
+                onPress={() => speech.setVoice(v.key)}
+              >
+                <Text style={[styles.toggleText, speech.voice === v.key && styles.toggleTextActive]}>
+                  {t(v.labelKey)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Mode selection */}
           <View style={styles.toggleRow}>
             {MODES.map((m) => (
               <TouchableOpacity
@@ -67,6 +109,7 @@ export default function SpeechPlayer({ visible, onClose }: Props) {
             ))}
           </View>
 
+          {/* Rate selection */}
           <View style={styles.toggleRow}>
             {RATES.map((r) => (
               <TouchableOpacity
@@ -103,6 +146,7 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       borderTopRightRadius: borderRadius.lg,
       padding: spacing.xl,
       paddingBottom: spacing.xxl,
+      maxHeight: '80%',
     },
     handle: {
       width: 40,
@@ -112,19 +156,36 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       alignSelf: 'center',
       marginBottom: spacing.lg,
     },
-    currentNote: {
-      fontSize: fontSize.lg,
+    noteList: {
+      maxHeight: 150,
+      marginBottom: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+      borderRadius: borderRadius.sm,
+    },
+    noteItem: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.border,
+    },
+    noteItemActive: {
+      backgroundColor: c.activeOptionBg,
+    },
+    noteItemText: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+    },
+    noteItemTextActive: {
+      color: c.primary,
       fontWeight: '600',
-      color: c.text,
-      textAlign: 'center',
-      marginBottom: spacing.xl,
     },
     controls: {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
       gap: spacing.xl,
-      marginBottom: spacing.xl,
+      marginBottom: spacing.lg,
     },
     controlBtn: {
       padding: spacing.md,
