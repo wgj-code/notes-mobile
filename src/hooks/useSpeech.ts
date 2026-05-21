@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { createTTS, type TTS } from 'react-native-sherpa-onnx/tts';
+import { createTTS, type TTS } from 'react-native-sherpa-onnx';
 import { assetModelPath } from 'react-native-sherpa-onnx';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
