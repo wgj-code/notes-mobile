@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as Speech from 'expo-speech';
 
 export type PlayMode = 'sequential' | 'random' | 'loop';
@@ -11,10 +12,11 @@ const RATE_MAP: Record<SpeechRate, number> = {
   fast: 1.5,
 };
 
-const VOICE_MAP: Record<SpeechVoice, string> = {
-  host: 'zh-CN-YunxiNeural',
-  girl: 'zh-CN-XiaoxiaoNeural',
-  lady: 'zh-CN-XiaohanNeural',
+// Voice config: pitch values for Android TTS (iOS uses voice ID if available)
+const VOICE_PITCH: Record<SpeechVoice, number> = {
+  host: 0.8,   // 低沉成熟
+  girl: 1.2,   // 活泼高音
+  lady: 1.0,   // 正常
 };
 
 interface Note {
@@ -48,7 +50,7 @@ export function useSpeech(notes: Note[]) {
 
     Speech.speak(text, {
       rate: RATE_MAP[rate],
-      voice: VOICE_MAP[voice],
+      pitch: VOICE_PITCH[voice],
       language: 'zh-CN',
       onDone: () => {
         isSpeakingRef.current = false;
