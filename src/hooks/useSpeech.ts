@@ -56,15 +56,18 @@ export function useSpeech(notes: Note[]) {
   const findBestVoice = useCallback((style: SpeechVoice): string | undefined => {
     const keywords = VOICE_KEYWORDS[style];
     const voices = availableVoicesRef.current;
-    // Try to find a matching Chinese voice
+    // Try to find a matching Chinese voice by name or identifier
     for (const kw of keywords) {
-      const match = voices.find((v) =>
-        v.language?.startsWith('zh') && (v.identifier.includes(kw) || v.name.includes(kw))
-      );
+      const match = voices.find((v) => {
+        const lang = v.language || '';
+        const id = v.identifier || '';
+        const name = v.name || '';
+        return lang.startsWith('zh') && (id.toLowerCase().includes(kw.toLowerCase()) || name.toLowerCase().includes(kw.toLowerCase()));
+      });
       if (match) return match.identifier;
     }
     // Fallback: any Chinese voice
-    const chinese = voices.find((v) => v.language?.startsWith('zh'));
+    const chinese = voices.find((v) => (v.language || '').startsWith('zh'));
     return chinese?.identifier;
   }, []);
 
@@ -109,6 +112,11 @@ export function useSpeech(notes: Note[]) {
     }
   }, [isPlaying, currentIndex, playNote]);
 
+  const playAtIndex = useCallback((index: number) => {
+    Speech.stop();
+    playNote(index);
+  }, [playNote]);
+
   const playPrev = useCallback(() => {
     Speech.stop();
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : notes.length - 1;
@@ -138,6 +146,7 @@ export function useSpeech(notes: Note[]) {
     setRate,
     setVoice,
     togglePlay,
+    playAtIndex,
     playPrev,
     playNext,
     stop,

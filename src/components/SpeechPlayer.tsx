@@ -49,7 +49,7 @@ export default function SpeechPlayer({ visible, onClose }: Props) {
             renderItem={({ item, index }) => (
               <TouchableOpacity
                 style={[styles.noteItem, index === speech.currentIndex && styles.noteItemActive]}
-                onPress={() => speech.togglePlay()}
+                onPress={() => speech.playAtIndex(index)}
               >
                 <Text style={[styles.noteItemText, index === speech.currentIndex && styles.noteItemTextActive]} numberOfLines={1}>
                   {index === speech.currentIndex && speech.isPlaying ? '▶ ' : '   '}{item.title}
