@@ -205,5 +205,18 @@
     "sessionExpired": "会话已过期，请重新登录",
     "dontShow": "不再显示",
     "confirmClose": "确认关闭"
+  },
+  "speech": {
+    "title": "语音朗读",
+    "description": "听笔记，支持顺序、随机、循环播放",
+    "startListening": "开始朗读",
+    "stop": "停止朗读",
+    "sequential": "顺序",
+    "random": "随机",
+    "loop": "循环",
+    "slow": "慢速",
+    "normal": "正常",
+    "fast": "快速",
+    "noNotes": "没有可朗读的笔记"
   }
 }

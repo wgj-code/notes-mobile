@@ -9,6 +9,7 @@ import { useNotesStore } from '../stores/notesStore';
 import { spacing, fontSize, borderRadius } from '../lib/theme';
 import { useThemeColors, useTheme } from '../contexts/ThemeContext';
 import { t, getLanguage, setLanguage } from '../i18n';
+import SpeechPlayer from '../components/SpeechPlayer';
 
 type ThemeMode = 'system' | 'light' | 'dark';
 const THEME_OPTIONS: { key: ThemeMode; labelKey: string }[] = [
@@ -23,6 +24,7 @@ export default function SettingsScreen() {
   const { session, signOut } = useAuthStore();
   const { notes } = useNotesStore();
   const [lang, setLang] = useState<'en' | 'zh'>(getLanguage() as 'en' | 'zh');
+  const [showSpeech, setShowSpeech] = useState(false);
 
   const styles = makeStyles(colors);
 
@@ -134,6 +136,14 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
+        <Text style={styles.label}>{t('speech.title')}</Text>
+        <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('speech.description')}</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={() => setShowSpeech(true)}>
+          <Text style={styles.actionButtonText}>{t('speech.startListening')}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
         <Text style={styles.label}>{t('settings.exportAll')}</Text>
         <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('settings.exportAllDesc')}</Text>
         <TouchableOpacity style={styles.actionButton} onPress={handleExportAll}>
@@ -149,6 +159,8 @@ export default function SettingsScreen() {
       <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>
         <Text style={styles.dangerText}>{t('settings.signOut')}</Text>
       </TouchableOpacity>
+
+      <SpeechPlayer visible={showSpeech} onClose={() => setShowSpeech(false)} />
     </View>
   );
 }

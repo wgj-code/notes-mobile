@@ -205,5 +205,18 @@
     "sessionExpired": "Session expired, please login again",
     "dontShow": "Don't show again",
     "confirmClose": "Confirm & Close"
+  },
+  "speech": {
+    "title": "Speech Reader",
+    "description": "Listen to your notes with sequential, random, or loop playback",
+    "startListening": "Start Listening",
+    "stop": "Stop Listening",
+    "sequential": "Sequential",
+    "random": "Random",
+    "loop": "Loop",
+    "slow": "Slow",
+    "normal": "Normal",
+    "fast": "Fast",
+    "noNotes": "No notes to read"
   }
 }
