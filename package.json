@@ -1,6 +1,6 @@
 {
   "name": "notes-mobile",
-  "version": "0.1.16",
+  "version": "0.1.19",
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
   "scripts": {
@@ -39,6 +39,7 @@
     "react-native-markdown-display": "^7.0.2",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
+    "react-native-sherpa-onnx": "^0.4.3",
     "react-native-url-polyfill": "^2.0.0",
     "zustand": "^5.0.12"
   },
