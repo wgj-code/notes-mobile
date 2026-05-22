@@ -23,7 +23,7 @@ fi
 # The ReactModuleInfo constructor changed from Kotlin named params to positional args in RN 0.76
 python3 -c "
 import os
-path = os.path.join(os.getcwd(), '../node_modules/@dr.pogodin/react-native-fs/android/src/main/java/com/drpogodin/reactnativefs/ReactNativeFsPackage.kt')
+path = os.path.join(os.getcwd(), 'node_modules/@dr.pogodin/react-native-fs/android/src/main/java/com/drpogodin/reactnativefs/ReactNativeFsPackage.kt')
 if os.path.exists(path):
     with open(path, 'r') as f:
         content = f.read()
