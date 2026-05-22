@@ -17,25 +17,30 @@ const RATE_MAP: Record<SpeechRate, number> = { slow: 0.7, normal: 1.0, fast: 1.3
 const MODEL_DIR = 'kokoro-int8-multi-lang-v1_1';
 const MODEL_FILES = ['model.int8.onnx', 'voices.bin', 'tokens.txt', 'lexicon-zh.txt', 'espeak-ng-data'];
 
+// Static require map for model files (Metro bundler requires static paths)
+const MODEL_ASSETS: Record<string, any> = {
+  'model.int8.onnx': require('../../assets/models/kokoro-int8-multi-lang-v1_1/model.int8.onnx'),
+  'voices.bin': require('../../assets/models/kokoro-int8-multi-lang-v1_1/voices.bin'),
+  'tokens.txt': require('../../assets/models/kokoro-int8-multi-lang-v1_1/tokens.txt'),
+  'lexicon-zh.txt': require('../../assets/models/kokoro-int8-multi-lang-v1_1/lexicon-zh.txt'),
+  'espeak-ng-data': require('../../assets/models/kokoro-int8-multi-lang-v1_1/espeak-ng-data'),
+};
+
 async function ensureModelReady(): Promise<string> {
   const destDir = `${FileSystem.documentDirectory}models/${MODEL_DIR}/`;
   const marker = `${destDir}.initialized`;
 
-  // Check if model already copied
   const info = await FileSystem.getInfoAsync(marker).catch(() => null);
   if (info?.exists) return destDir;
 
-  // Copy model files from assets to document directory
   await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
 
   for (const file of MODEL_FILES) {
-    const asset = Asset.fromModule(require(`../../assets/models/${MODEL_DIR}/${file}`));
+    const asset = Asset.fromModule(MODEL_ASSETS[file]);
     await asset.downloadAsync();
-    const destFile = `${destDir}${file}`;
-    await FileSystem.copyAsync({ from: asset.localUri!, to: destFile });
+    await FileSystem.copyAsync({ from: asset.localUri!, to: `${destDir}${file}` });
   }
 
-  // Mark as initialized
   await FileSystem.writeAsStringAsync(marker, 'ok');
   return destDir;
 }
