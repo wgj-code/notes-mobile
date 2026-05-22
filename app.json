@@ -2,7 +2,7 @@
   "expo": {
     "name": "迪迪笔记",
     "slug": "notes-mobile",
-    "version": "0.1.30",
+    "version": "0.1.32",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.jpg",
@@ -32,8 +32,7 @@
     },
     "plugins": [
       "expo-sqlite",
-      "expo-secure-store",
-      "./plugins/withSherpaOnnx.js"
+      "expo-secure-store"
     ],
     "owner": "wgj-code"
   }
