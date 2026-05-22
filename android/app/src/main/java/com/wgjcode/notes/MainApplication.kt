@@ -16,7 +16,6 @@ import com.facebook.soloader.SoLoader
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
 import com.rnfs.RNFSPackage
-import com.drpogodin.reactnativefs.ReactNativeFsPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -26,7 +25,8 @@ class MainApplication : Application(), ReactApplication {
           override fun getPackages(): List<ReactPackage> {
             val packages = PackageList(this).packages
             packages.add(RNFSPackage())
-            packages.add(ReactNativeFsPackage())
+            // Packages that cannot be autolinked yet can be added manually here, for example:
+            // packages.add(new MyReactNativePackage());
             return packages
           }
 
