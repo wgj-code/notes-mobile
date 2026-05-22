@@ -20,12 +20,46 @@ fi
 # Manual linking causes task dependency conflicts with Expo's codegen
 
 # Patch @dr.pogodin/react-native-fs for RN 0.76.x compatibility
-# The ReactModuleInfo constructor changed from 6 to 7 args in RN 0.76
-RNFS_KT="../node_modules/@dr.pogodin/react-native-fs/android/src/main/java/com/drpogodin/reactnativefs/ReactNativeFsPackage.kt"
-if [ -f "$RNFS_KT" ]; then
-  # Replace old 6-arg constructor call with new 7-arg version
-  sed -i 's/ReactNativeFsModule.NAME,ReactNativeFsModule.NAME,canOverrideExistingModule = false,  needsEagerInit = false,  isCxxModule = false,  isTurboModule = true/ReactNativeFsModule.NAME, ReactNativeFsModule.NAME, false, false, false, false, true/' "$RNFS_KT"
-  echo "Patched react-native-fs for RN 0.76.x compatibility"
+# The ReactModuleInfo constructor changed from Kotlin named params to positional args in RN 0.76
+python3 -c "
+import os
+path = os.path.join(os.getcwd(), '../node_modules/@dr.pogodin/react-native-fs/android/src/main/java/com/drpogodin/reactnativefs/ReactNativeFsPackage.kt')
+if os.path.exists(path):
+    with open(path, 'r') as f:
+        content = f.read()
+    old = '''moduleInfos[ReactNativeFsModule.NAME] = ReactModuleInfo(
+        ReactNativeFsModule.NAME,
+        ReactNativeFsModule.NAME,
+        canOverrideExistingModule = false,  // canOverrideExistingModule
+        needsEagerInit = false,  // needsEagerInit
+        isCxxModule = false,  // isCxxModule
+        isTurboModule = true // isTurboModule
+      )'''
+    new = '''moduleInfos[ReactNativeFsModule.NAME] = ReactModuleInfo(
+        ReactNativeFsModule.NAME,
+        ReactNativeFsModule.NAME,
+        false,
+        false,
+        false,
+        false,
+        true
+      )'''
+    content = content.replace(old, new)
+    with open(path, 'w') as f:
+        f.write(content)
+    print('Patched react-native-fs for RN 0.76.x')
+else:
+    print('File not found, skipping patch')
+"
+
+# Register react-native-fs in MainApplication.kt (Article: Baidu#2888578)
+MAIN_APP="android/app/src/main/java/com/wgjcode/notes/MainApplication.kt"
+if [ -f "$MAIN_APP" ] && ! grep -q "RNFSPackage" "$MAIN_APP"; then
+  # Add import
+  sed -i '/import expo.modules.ReactNativeHostWrapper/a import com.rnfs.RNFSPackage' "$MAIN_APP"
+  # Add package registration
+  sed -i '/val packages = PackageList(this).packages/a\            packages.add(RNFSPackage())' "$MAIN_APP"
+  echo "Registered RNFSPackage in MainApplication.kt"
 fi
 
 echo "Done linking native modules"
