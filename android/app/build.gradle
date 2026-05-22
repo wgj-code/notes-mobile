@@ -92,7 +92,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "0.1.36"
+        versionName "0.1.51"
     }
     signingConfigs {
         debug {
@@ -147,6 +147,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-sherpa-onnx')
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 

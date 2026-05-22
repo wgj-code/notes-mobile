@@ -16,15 +16,16 @@ if ! grep -q "react-native-sherpa-onnx" "$BUILD"; then
   echo "Added sherpa-onnx to app/build.gradle"
 fi
 
-# Link @dr.pogodin/react-native-fs (required by sherpa-onnx)
-RNFS_DIR="../node_modules/@dr.pogodin/react-native-fs/android"
-if ! grep -q "react-native-fs" "$SETTINGS"; then
-  sed -i "/include ':app'/a include ':react-native-fs'\nproject(':react-native-fs').projectDir = new File(rootProject.projectDir, '$RNFS_DIR')" "$SETTINGS"
-  echo "Added react-native-fs to settings.gradle"
-fi
-if ! grep -q "react-native-fs" "$BUILD"; then
-  sed -i "/dependencies {/a\\    implementation project(':react-native-fs')" "$BUILD"
-  echo "Added react-native-fs to app/build.gradle"
+# Note: @dr.pogodin/react-native-fs is autolinked by Expo - do NOT manually link it
+# Manual linking causes task dependency conflicts with Expo's codegen
+
+# Patch @dr.pogodin/react-native-fs for RN 0.76.x compatibility
+# The ReactModuleInfo constructor changed from 6 to 7 args in RN 0.76
+RNFS_KT="../node_modules/@dr.pogodin/react-native-fs/android/src/main/java/com/drpogodin/reactnativefs/ReactNativeFsPackage.kt"
+if [ -f "$RNFS_KT" ]; then
+  # Replace old 6-arg constructor call with new 7-arg version
+  sed -i 's/ReactNativeFsModule.NAME,ReactNativeFsModule.NAME,canOverrideExistingModule = false,  needsEagerInit = false,  isCxxModule = false,  isTurboModule = true/ReactNativeFsModule.NAME, ReactNativeFsModule.NAME, false, false, false, false, true/' "$RNFS_KT"
+  echo "Patched react-native-fs for RN 0.76.x compatibility"
 fi
 
 echo "Done linking native modules"
