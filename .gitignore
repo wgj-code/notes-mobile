@@ -29,3 +29,5 @@ android/.gradle/
 .vscode/
 *.apk
 build-*.apk
+assets/models/kokoro-int8-multi-lang-v1_1/
+assets/models/kokoro-int8-multi-lang-v1_1.tar.bz2
