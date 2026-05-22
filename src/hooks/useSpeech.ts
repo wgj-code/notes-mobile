@@ -3,7 +3,6 @@ import { createTTS, type TTS } from 'react-native-sherpa-onnx';
 import { fileModelPath } from 'react-native-sherpa-onnx';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
 
 export type PlayMode = 'sequential' | 'random' | 'loop';
 export type SpeechRate = 'slow' | 'normal' | 'fast';
@@ -15,16 +14,7 @@ const VOICE_IDS: Record<SpeechVoice, number> = { host: 50, girl: 45, lady: 52 };
 const RATE_MAP: Record<SpeechRate, number> = { slow: 0.7, normal: 1.0, fast: 1.3 };
 
 const MODEL_DIR = 'kokoro-int8-multi-lang-v1_1';
-const MODEL_FILES = ['model.int8.onnx', 'voices.bin', 'tokens.txt', 'lexicon-zh.txt', 'espeak-ng-data'];
-
-// Static require map for model files (Metro bundler requires static paths)
-const MODEL_ASSETS: Record<string, any> = {
-  'model.int8.onnx': require('../../assets/models/kokoro-int8-multi-lang-v1_1/model.int8.onnx'),
-  'voices.bin': require('../../assets/models/kokoro-int8-multi-lang-v1_1/voices.bin'),
-  'tokens.txt': require('../../assets/models/kokoro-int8-multi-lang-v1_1/tokens.txt'),
-  'lexicon-zh.txt': require('../../assets/models/kokoro-int8-multi-lang-v1_1/lexicon-zh.txt'),
-  'espeak-ng-data': require('../../assets/models/kokoro-int8-multi-lang-v1_1/espeak-ng-data'),
-};
+const MODEL_TAR_URL = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-int8-multi-lang-v1_1.tar.bz2';
 
 async function ensureModelReady(): Promise<string> {
   const destDir = `${FileSystem.documentDirectory}models/${MODEL_DIR}/`;
@@ -33,12 +23,23 @@ async function ensureModelReady(): Promise<string> {
   const info = await FileSystem.getInfoAsync(marker).catch(() => null);
   if (info?.exists) return destDir;
 
+  // Download and extract model from GitHub Releases
+  const tarPath = `${FileSystem.cacheDirectory}kokoro-model.tar.bz2`;
+  await FileSystem.downloadAsync(MODEL_TAR_URL, tarPath);
+
+  // Extract using a simple approach: download individual files
+  // For now, use the tar file directly with sherpa-onnx's extraction
   await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
 
-  for (const file of MODEL_FILES) {
-    const asset = Asset.fromModule(MODEL_ASSETS[file]);
-    await asset.downloadAsync();
-    await FileSystem.copyAsync({ from: asset.localUri!, to: `${destDir}${file}` });
+  // Use tar extraction command via expo-file-system
+  // Actually, let's download from a simpler source
+  const baseUrl = 'https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/master/scripts/kokoro/model';
+  const files = ['model.int8.onnx', 'voices.bin', 'tokens.txt', 'lexicon-zh.txt'];
+
+  for (const file of files) {
+    const url = `${baseUrl}/${MODEL_DIR}/${file}`;
+    const dest = `${destDir}${file}`;
+    await FileSystem.downloadAsync(url, dest);
   }
 
   await FileSystem.writeAsStringAsync(marker, 'ok');
