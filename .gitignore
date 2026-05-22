@@ -29,3 +29,5 @@ android/.gradle/
 .vscode/
 *.apk
 build-*.apk
+assets/models/
+assets/models/
