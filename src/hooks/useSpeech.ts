@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createTTS, type TTS } from 'react-native-sherpa-onnx';
-import { fileModelPath } from 'react-native-sherpa-onnx';
+import { assetModelPath } from 'react-native-sherpa-onnx';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 
@@ -10,41 +10,10 @@ export type SpeechVoice = 'host' | 'girl' | 'lady';
 
 interface Note { id: string; title: string; content: string; }
 
+// Kokoro multi-lang Chinese speaker IDs (v1_0 compatible)
+// 45: zf_xiaobei(女活泼) 50: zm_yunxi(男成熟) 52: zm_yunyang(男温暖)
 const VOICE_IDS: Record<SpeechVoice, number> = { host: 50, girl: 45, lady: 52 };
 const RATE_MAP: Record<SpeechRate, number> = { slow: 0.7, normal: 1.0, fast: 1.3 };
-
-const MODEL_DIR = 'kokoro-int8-multi-lang-v1_1';
-const MODEL_TAR_URL = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-int8-multi-lang-v1_1.tar.bz2';
-
-async function ensureModelReady(): Promise<string> {
-  const destDir = `${FileSystem.documentDirectory}models/${MODEL_DIR}/`;
-  const marker = `${destDir}.initialized`;
-
-  const info = await FileSystem.getInfoAsync(marker).catch(() => null);
-  if (info?.exists) return destDir;
-
-  // Download and extract model from GitHub Releases
-  const tarPath = `${FileSystem.cacheDirectory}kokoro-model.tar.bz2`;
-  await FileSystem.downloadAsync(MODEL_TAR_URL, tarPath);
-
-  // Extract using a simple approach: download individual files
-  // For now, use the tar file directly with sherpa-onnx's extraction
-  await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
-
-  // Use tar extraction command via expo-file-system
-  // Actually, let's download from a simpler source
-  const baseUrl = 'https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/master/scripts/kokoro/model';
-  const files = ['model.int8.onnx', 'voices.bin', 'tokens.txt', 'lexicon-zh.txt'];
-
-  for (const file of files) {
-    const url = `${baseUrl}/${MODEL_DIR}/${file}`;
-    const dest = `${destDir}${file}`;
-    await FileSystem.downloadAsync(url, dest);
-  }
-
-  await FileSystem.writeAsStringAsync(marker, 'ok');
-  return destDir;
-}
 
 export function useSpeech(notes: Note[]) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,9 +28,8 @@ export function useSpeech(notes: Note[]) {
   useEffect(() => {
     (async () => {
       try {
-        const modelDir = await ensureModelReady();
         ttsRef.current = await createTTS({
-          modelConfig: fileModelPath(modelDir),
+          modelConfig: assetModelPath('models/kokoro-int8-multi-lang-v1_1'),
           modelType: 'kokoro',
         });
       } catch (err) { console.error('TTS init failed:', err); }
