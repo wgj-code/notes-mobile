@@ -2,7 +2,7 @@
   "expo": {
     "name": "迪迪笔记",
     "slug": "notes-mobile",
-    "version": "0.1.40",
+    "version": "0.1.42",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.jpg",
@@ -34,6 +34,27 @@
       "expo-sqlite",
       "expo-secure-store"
     ],
-    "owner": "wgj-code"
+    "owner": "wgj-code",
+    "assets": [
+      {
+        "path": "assets/models/kokoro-int8-multi-lang-v1_1",
+        "type": "bundle"
+      },
+      {
+        "path": "assets/models/kokoro-int8-multi-lang-v1_1/model.int8.onnx"
+      },
+      {
+        "path": "assets/models/kokoro-int8-multi-lang-v1_1/voices.bin"
+      },
+      {
+        "path": "assets/models/kokoro-int8-multi-lang-v1_1/tokens.txt"
+      },
+      {
+        "path": "assets/models/kokoro-int8-multi-lang-v1_1/lexicon-zh.txt"
+      },
+      {
+        "path": "assets/models/kokoro-int8-multi-lang-v1_1/espeak-ng-data"
+      }
+    ]
   }
 }

@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createTTS, type TTS } from 'react-native-sherpa-onnx';
-import { assetModelPath } from 'react-native-sherpa-onnx';
+import { fileModelPath } from 'react-native-sherpa-onnx';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
 
 export type PlayMode = 'sequential' | 'random' | 'loop';
 export type SpeechRate = 'slow' | 'normal' | 'fast';
@@ -10,15 +11,34 @@ export type SpeechVoice = 'host' | 'girl' | 'lady';
 
 interface Note { id: string; title: string; content: string; }
 
-// Kokoro multi-lang v1_0 中文 speaker IDs (v1_1 兼容)
-// 45: zf_xiaobei(女活泼) 50: zm_yunxi(男成熟) 52: zm_yunyang(男温暖)
-const VOICE_IDS: Record<SpeechVoice, number> = {
-  host: 50,   // 成熟男主持
-  girl: 45,   // 活泼女声
-  lady: 52,   // 温暖男声
-};
-
+const VOICE_IDS: Record<SpeechVoice, number> = { host: 50, girl: 45, lady: 52 };
 const RATE_MAP: Record<SpeechRate, number> = { slow: 0.7, normal: 1.0, fast: 1.3 };
+
+const MODEL_DIR = 'kokoro-int8-multi-lang-v1_1';
+const MODEL_FILES = ['model.int8.onnx', 'voices.bin', 'tokens.txt', 'lexicon-zh.txt', 'espeak-ng-data'];
+
+async function ensureModelReady(): Promise<string> {
+  const destDir = `${FileSystem.documentDirectory}models/${MODEL_DIR}/`;
+  const marker = `${destDir}.initialized`;
+
+  // Check if model already copied
+  const info = await FileSystem.getInfoAsync(marker).catch(() => null);
+  if (info?.exists) return destDir;
+
+  // Copy model files from assets to document directory
+  await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
+
+  for (const file of MODEL_FILES) {
+    const asset = Asset.fromModule(require(`../../assets/models/${MODEL_DIR}/${file}`));
+    await asset.downloadAsync();
+    const destFile = `${destDir}${file}`;
+    await FileSystem.copyAsync({ from: asset.localUri!, to: destFile });
+  }
+
+  // Mark as initialized
+  await FileSystem.writeAsStringAsync(marker, 'ok');
+  return destDir;
+}
 
 export function useSpeech(notes: Note[]) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,8 +53,9 @@ export function useSpeech(notes: Note[]) {
   useEffect(() => {
     (async () => {
       try {
+        const modelDir = await ensureModelReady();
         ttsRef.current = await createTTS({
-          modelConfig: assetModelPath('models/kokoro-int8-multi-lang-v1_1'),
+          modelConfig: fileModelPath(modelDir),
           modelType: 'kokoro',
         });
       } catch (err) { console.error('TTS init failed:', err); }
