@@ -1,9 +1,10 @@
 {
   "name": "notes-mobile",
-  "version": "0.1.62",
+  "version": "0.1.63",
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
   "scripts": {
+    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/@dr.pogodin/react-native-fs/android/src/main/java/com/drpogodin/reactnativefs/ReactNativeFsPackage.kt';if(fs.existsSync(p)){let c=fs.readFileSync(p,'utf8');c=c.replace(/canOverrideExistingModule = false,.*?isTurboModule = true/s,'false,\\n        false,\\n        false,\\n        false,\\n        true');fs.writeFileSync(p,c);console.log('Patched ReactNativeFsPackage for RN 0.76.x')}\"",
     "version:bump": "./scripts/bump-version.sh",
     "start": "expo start",
     "android": "expo run:android",
