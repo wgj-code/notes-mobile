@@ -41,6 +41,23 @@ export default function SpeechPlayer({ visible, onClose }: Props) {
         <TouchableOpacity style={styles.panel} activeOpacity={1}>
           <View style={styles.handle} />
 
+          {/* TTS status */}
+          {!speech.ttsReady && !speech.ttsError && (
+            <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+              Loading voice engine...
+            </Text>
+          )}
+          {speech.ttsError && (
+            <Text style={[styles.statusText, { color: colors.danger }]}>
+              Voice error: {speech.ttsError}
+            </Text>
+          )}
+          {speech.ttsReady && speech.playStatus !== 'idle' && speech.playStatus !== 'finished' && (
+            <Text style={[styles.statusText, { color: colors.textSecondary, fontSize: 10 }]}>
+              {speech.playStatus}
+            </Text>
+          )}
+
           {/* Note list */}
           <FlatList
             data={notes}
@@ -155,6 +172,11 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       backgroundColor: c.border,
       alignSelf: 'center',
       marginBottom: spacing.lg,
+    },
+    statusText: {
+      fontSize: fontSize.sm,
+      textAlign: 'center',
+      marginBottom: spacing.md,
     },
     noteList: {
       maxHeight: 150,
