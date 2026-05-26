@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuthStore } from './src/stores/authStore';
 import { ThemeProvider } from './src/contexts/ThemeContext';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import NotesScreen from './src/screens/NotesScreen';
@@ -117,6 +118,7 @@ export default function App() {
   }
 
   return (
+    <ErrorBoundary>
     <ThemeProvider>
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
@@ -139,5 +141,6 @@ export default function App() {
         </RootStack.Navigator>
       </NavigationContainer>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }

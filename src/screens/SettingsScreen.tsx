@@ -10,6 +10,7 @@ import { spacing, fontSize, borderRadius } from '../lib/theme';
 import { useThemeColors, useTheme } from '../contexts/ThemeContext';
 import { t, getLanguage, setLanguage } from '../i18n';
 import SpeechPlayer from '../components/SpeechPlayer';
+import { logger } from '../lib/logger';
 
 type ThemeMode = 'system' | 'light' | 'dark';
 const THEME_OPTIONS: { key: ThemeMode; labelKey: string }[] = [
@@ -148,6 +149,14 @@ export default function SettingsScreen() {
         <Text style={[styles.value, { marginBottom: spacing.sm }]}>{t('settings.exportAllDesc')}</Text>
         <TouchableOpacity style={styles.actionButton} onPress={handleExportAll}>
           <Text style={styles.actionButtonText}>{t('settings.exportAll')}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.label}>日志回传</Text>
+        <Text style={[styles.value, { marginBottom: spacing.sm }]}>出现闪退等问题时自动上报日志</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={() => { logger.flush(); alert('日志已上报'); }}>
+          <Text style={styles.actionButtonText}>立即上报日志</Text>
         </TouchableOpacity>
       </View>
 
