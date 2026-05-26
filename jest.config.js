@@ -6,6 +6,11 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^react-native-sherpa-onnx/tts$': '<rootDir>/src/__mocks__/react-native-sherpa-onnx.js',
+    '^react-native-sherpa-onnx$': '<rootDir>/src/__mocks__/react-native-sherpa-onnx.js',
+  },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
