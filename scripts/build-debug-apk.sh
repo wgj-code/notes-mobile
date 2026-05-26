@@ -45,11 +45,36 @@ echo "=== [3/4] Building debug APK ==="
 cd android
 ./gradlew assembleDebug
 
-echo "=== [4/4] Done ==="
+echo "=== [4/4] Verifying APK ==="
 APK="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
 if [ -f "$APK" ]; then
   SIZE=$(du -h "$APK" | cut -f1)
   echo "APK: $APK ($SIZE)"
+
+  # aapt metadata verification
+  AAPT="$ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | tail -1)/aapt"
+  if [ -f "$AAPT" ]; then
+    PKG=$($AAPT dump badging "$APK" 2>/dev/null | grep "^package:" | sed 's/.*name='\''\(.*'\''\) .*/\1/')
+    VER=$($AAPT dump badging "$APK" 2>/dev/null | grep "^package:" | sed 's/.*versionName='\''\(.*'\''\) .*/\1/')
+    echo "  Package: $PKG  Version: $VER"
+  fi
+
+  # Try emulator verification if available
+  ADB="$ANDROID_HOME/platform-tools/adb"
+  if [ -f "$ADB" ]; then
+    DEVICE=$($ADB devices 2>/dev/null | grep -w "device" | head -1 | awk '{print $1}')
+    if [ -n "$DEVICE" ]; then
+      echo "  Device found: $DEVICE — installing..."
+      $ADB install -r "$APK" 2>&1 | tail -3
+      echo "  Starting app..."
+      $ADB shell am start -n com.wgjcode.notes/.MainActivity 2>&1
+      sleep 3
+      $ADB logcat -d -s ReactNativeJS 2>/dev/null | grep -i "error\|crash\|fatal" | tail -5 || echo "  No errors in logcat"
+    else
+      echo "  No device/emulator connected — skipping install verification"
+    fi
+  fi
+
   echo "Windows: \\\\wsl.localhost\\Ubuntu1\\home\\wgj\\6a-demo-notes\\repos\\notes-mobile\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk"
 else
   echo "ERROR: APK not found!"
