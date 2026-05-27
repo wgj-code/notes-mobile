@@ -20,16 +20,20 @@ const THEME_OPTIONS: { key: ThemeMode; labelKey: string }[] = [
   { key: 'dark', labelKey: 'settings.themeDark' },
 ];
 
-function VersionSection() {
+export default function SettingsScreen() {
   const colors = useThemeColors();
-  const { checking, result, localVersion, checkForUpdate, applyOTAUpdate, downloadAPK } = useVersionCheck();
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
+  const { session, signOut } = useAuthStore();
+  const { notes } = useNotesStore();
+  const [lang, setLang] = useState<'en' | 'zh'>(getLanguage() as 'en' | 'zh');
+  const [showSpeech, setShowSpeech] = useState(false);
 
-  const handleCheck = async () => {
+  const styles = makeStyles(colors);
+  const { checking: versionChecking, result: versionResult, localVersion, checkForUpdate, applyOTAUpdate, downloadAPK } = useVersionCheck();
+
+  const handleCheckUpdate = async () => {
     const res = await checkForUpdate();
-    if (!res) {
-      alert('检查失败，请检查网络');
-      return;
-    }
+    if (!res) { Alert.alert('检查更新', '检查失败，请检查网络'); return; }
     if (res.hasAPKUpdate) {
       Alert.alert('有新版本', `最新版本 ${res.version.current}\n${res.version.releaseNote}\n\n需要下载新版本安装`, [
         { text: '取消', style: 'cancel' },
@@ -41,33 +45,9 @@ function VersionSection() {
         { text: '立即更新', onPress: applyOTAUpdate },
       ]);
     } else {
-      alert('已是最新版本');
+      Alert.alert('检查更新', '已是最新版本');
     }
   };
-
-  return (
-    <View style={{ marginTop: spacing.sm }}>
-      <TouchableOpacity style={styles.actionButton} onPress={handleCheck} disabled={checking}>
-        <Text style={styles.actionButtonText}>{checking ? '检查中...' : '检查更新'}</Text>
-      </TouchableOpacity>
-      {result && (
-        <Text style={[styles.value, { fontSize: fontSize.sm, marginTop: spacing.xs, color: colors.textSecondary }]}>
-          最新版本: {result.latestVersion} | 当前版本: {localVersion}
-        </Text>
-      )}
-    </View>
-  );
-}
-
-export default function SettingsScreen() {
-  const colors = useThemeColors();
-  const { mode: themeMode, setMode: setThemeMode } = useTheme();
-  const { session, signOut } = useAuthStore();
-  const { notes } = useNotesStore();
-  const [lang, setLang] = useState<'en' | 'zh'>(getLanguage() as 'en' | 'zh');
-  const [showSpeech, setShowSpeech] = useState(false);
-
-  const styles = makeStyles(colors);
 
   const handleSignOut = () => {
     Alert.alert(t('settings.signOut'), t('settings.confirmSignOut'), [
@@ -198,7 +178,7 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.actionButton} onPress={async () => {
           logger.info('Manual log upload triggered');
           const result = await logger.flush();
-          alert(`上报结果: ${result}`);
+          Alert.alert('日志回传', `上报结果: ${result}`);
         }}>
           <Text style={styles.actionButtonText}>立即上报日志</Text>
         </TouchableOpacity>
@@ -207,8 +187,19 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.label}>{t('settings.about')}</Text>
         <Text style={styles.value}>{t('settings.version')} {Constants.expoConfig?.version ?? '0.1.0'}</Text>
-        <VersionSection />
+        <View style={{ marginTop: spacing.sm }}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleCheckUpdate} disabled={versionChecking}>
+            <Text style={styles.actionButtonText}>{versionChecking ? '检查中...' : '检查更新'}</Text>
+          </TouchableOpacity>
+          {versionResult && (
+            <Text style={[styles.value, { fontSize: fontSize.sm, marginTop: spacing.xs, color: colors.textSecondary }]}>
+              最新版本: {versionResult.latestVersion} | 当前版本: {localVersion}
+            </Text>
+          )}
+        </View>
       </View>
+
+      <View style={{ height: spacing.xxl }} />
 
       <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>
         <Text style={styles.dangerText}>{t('settings.signOut')}</Text>
