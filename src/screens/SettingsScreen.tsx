@@ -42,7 +42,10 @@ export default function SettingsScreen() {
     } else if (res.hasOTAUpdate) {
       Alert.alert('有新版本', `最新版本 ${res.version.current}\n${res.version.releaseNote}\n\n点击更新（秒级完成）`, [
         { text: '取消', style: 'cancel' },
-        { text: '立即更新', onPress: applyOTAUpdate },
+        { text: '立即更新', onPress: async () => {
+          const ok = await applyOTAUpdate();
+          if (!ok) Alert.alert('更新失败', 'OTA 更新未成功，请稍后重试或重新安装');
+        }},
       ]);
     } else {
       Alert.alert('检查更新', '已是最新版本');

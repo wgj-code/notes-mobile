@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import * as FileSystem from 'expo-file-system';
-import * as IntentLauncher from 'expo-intent-launcher';
+import { Linking, Platform } from 'react-native';
 
 const VERSION_API = 'http://8.133.196.220/api/version';
 
@@ -61,7 +61,8 @@ export function useVersionCheck() {
         return true;
       }
       return false;
-    } catch {
+    } catch (err: any) {
+      console.error('[OTA] Error:', err?.message || err);
       return false;
     }
   }, []);
@@ -71,11 +72,7 @@ export function useVersionCheck() {
       const filename = apkUrl.split('/').pop() || 'app.apk';
       const uri = `${FileSystem.cacheDirectory}${filename}`;
       await FileSystem.downloadAsync(apkUrl, uri);
-      const cUri = await FileSystem.getContentUriAsync(uri);
-      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-        data: cUri,
-        flags: 1,
-      });
+      await Linking.openURL(uri);
     } catch {
       // User may have cancelled the install
     }
