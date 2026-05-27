@@ -179,7 +179,7 @@ export default function SettingsScreen() {
         <Text style={styles.label}>日志回传</Text>
         <Text style={[styles.value, { marginBottom: spacing.sm }]}>出现闪退等问题时自动上报日志</Text>
         <TouchableOpacity style={styles.actionButton} onPress={async () => {
-          logger.info('Manual log upload triggered');
+          logger.event('SettingsScreen', 'Manual log upload triggered');
           const result = await logger.flush();
           Alert.alert('日志回传', `上报结果: ${result}`);
         }}>

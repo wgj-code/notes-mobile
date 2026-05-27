@@ -68,6 +68,31 @@ if [ -f "$APK" ]; then
     echo "  Package: $PKG  Version: $VER"
   fi
 
+  # adb auto-verification (if device connected)
+  ADB="$ANDROID_HOME/platform-tools/adb"
+  if [ -f "$ADB" ]; then
+    DEVICE=$($ADB devices 2>/dev/null | grep -w "device" | head -1 | awk '{print $1}')
+    if [ -n "$DEVICE" ]; then
+      echo "  Device: $DEVICE — auto-verifying..."
+      $ADB install -r "$APK" 2>&1 | tail -2
+      $ADB shell am start -n com.wgjcode.notes/.MainActivity 2>&1
+      sleep 5
+      ERRORS=$($ADB logcat -d -s ReactNativeJS 2>/dev/null | grep -ic "error\|fatal\|crash")
+      echo "  Logcat errors: $ERRORS"
+      SCREENSHOT="$PROJECT_DIR/Ref/verify-$(date +%Y%m%d-%H%M%S).png"
+      $ADB shell screencap -p /sdcard/verify.png && $ADB pull /sdcard/verify.png "$SCREENSHOT" 2>/dev/null
+      $ADB shell rm /sdcard/verify.png 2>/dev/null
+      echo "  Screenshot: $SCREENSHOT"
+      if [ "$ERRORS" -gt 0 ]; then
+        echo "  ⚠️  $ERRORS errors found in logcat"
+      else
+        echo "  ✅ No errors in logcat"
+      fi
+    else
+      echo "  No device connected — skipping adb verification"
+    fi
+  fi
+
   echo "Windows: \\\\wsl.localhost\\Ubuntu1\\home\\wgj\\6a-demo-notes\\repos\\notes-mobile\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk"
 else
   echo "ERROR: APK not found!"

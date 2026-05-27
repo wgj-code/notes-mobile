@@ -19,7 +19,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    logger.error(`Uncaught: ${error.message}`, error);
+    logger.error('ErrorBoundary', error.message, error);
   }
 
   render() {
