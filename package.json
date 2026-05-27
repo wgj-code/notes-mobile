@@ -1,6 +1,6 @@
 {
   "name": "notes-mobile",
-  "version": "0.1.66",
+  "version": "0.1.69",
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
   "scripts": {

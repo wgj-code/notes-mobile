@@ -2,7 +2,7 @@
   "expo": {
     "name": "迪迪笔记",
     "slug": "notes-mobile",
-    "version": "0.1.66",
+    "version": "0.1.69",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.jpg",
@@ -23,7 +23,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.jpg",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "runtimeVersion": "1.0.0"
     },
     "extra": {
       "eas": {
@@ -55,6 +56,9 @@
       {
         "path": "assets/models/kokoro-int8-multi-lang-v1_1/espeak-ng-data"
       }
-    ]
+    ],
+    "updates": {
+      "url": "https://u.expo.dev/ddf61deb-b15a-4c21-b1fb-ea58317449ea"
+    }
   }
 }

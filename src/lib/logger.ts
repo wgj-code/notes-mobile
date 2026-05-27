@@ -2,7 +2,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
-const LOG_API_URL = 'https://waveletvolt.xin/api/logs';
+const LOG_API_URL = 'http://8.133.196.220/api/logs';
 const FLUSH_INTERVAL = 30000; // 30 seconds
 const MAX_BUFFER = 20;
 
@@ -39,19 +39,21 @@ function createEntry(level: LogEntry['level'], message: string, stack?: string):
   };
 }
 
-async function flush() {
-  if (buffer.length === 0) return;
+async function flush(): Promise<string> {
+  if (buffer.length === 0) return 'no logs';
   const batch = [...buffer];
   buffer = [];
 
   try {
-    await fetch(LOG_API_URL, {
+    const resp = await fetch(LOG_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logs: batch }),
     });
-  } catch {
-    // Silently fail — don't crash the app for logging
+    const text = await resp.text();
+    return `status=${resp.status} body=${text}`;
+  } catch (err: any) {
+    return `error=${err?.message || String(err)}`;
   }
 }
 
