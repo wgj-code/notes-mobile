@@ -69,10 +69,9 @@ export function useVersionCheck() {
 
   const downloadAPK = useCallback(async (apkUrl: string) => {
     try {
-      Alert.alert('下载中', '正在下载新版本，请稍候...');
       await Linking.openURL(apkUrl);
     } catch (err: any) {
-      Alert.alert('下载失败', err?.message || '无法下载，请在浏览器中打开链接');
+      Alert.alert('下载失败', '无法打开下载链接，请在浏览器中手动打开：\n' + apkUrl);
     }
   }, []);
 
