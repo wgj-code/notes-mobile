@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -11,6 +11,7 @@ import { useThemeColors, useTheme } from '../contexts/ThemeContext';
 import { t, getLanguage, setLanguage } from '../i18n';
 import SpeechPlayer from '../components/SpeechPlayer';
 import { logger } from '../lib/logger';
+import { useVersionCheck } from '../hooks/useVersionCheck';
 
 type ThemeMode = 'system' | 'light' | 'dark';
 const THEME_OPTIONS: { key: ThemeMode; labelKey: string }[] = [
@@ -18,6 +19,45 @@ const THEME_OPTIONS: { key: ThemeMode; labelKey: string }[] = [
   { key: 'light', labelKey: 'settings.themeLight' },
   { key: 'dark', labelKey: 'settings.themeDark' },
 ];
+
+function VersionSection() {
+  const colors = useThemeColors();
+  const { checking, result, localVersion, checkForUpdate, applyOTAUpdate, downloadAPK } = useVersionCheck();
+
+  const handleCheck = async () => {
+    const res = await checkForUpdate();
+    if (!res) {
+      alert('检查失败，请检查网络');
+      return;
+    }
+    if (res.hasAPKUpdate) {
+      Alert.alert('有新版本', `最新版本 ${res.version.current}\n${res.version.releaseNote}\n\n需要下载新版本安装`, [
+        { text: '取消', style: 'cancel' },
+        { text: '下载更新', onPress: () => downloadAPK(res.version.apkUrl) },
+      ]);
+    } else if (res.hasOTAUpdate) {
+      Alert.alert('有新版本', `最新版本 ${res.version.current}\n${res.version.releaseNote}\n\n点击更新（秒级完成）`, [
+        { text: '取消', style: 'cancel' },
+        { text: '立即更新', onPress: applyOTAUpdate },
+      ]);
+    } else {
+      alert('已是最新版本');
+    }
+  };
+
+  return (
+    <View style={{ marginTop: spacing.sm }}>
+      <TouchableOpacity style={styles.actionButton} onPress={handleCheck} disabled={checking}>
+        <Text style={styles.actionButtonText}>{checking ? '检查中...' : '检查更新'}</Text>
+      </TouchableOpacity>
+      {result && (
+        <Text style={[styles.value, { fontSize: fontSize.sm, marginTop: spacing.xs, color: colors.textSecondary }]}>
+          最新版本: {result.latestVersion} | 当前版本: {localVersion}
+        </Text>
+      )}
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
@@ -66,7 +106,7 @@ export default function SettingsScreen() {
   }, [notes]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: spacing.xl, paddingBottom: spacing.xxl }}>
       <View style={styles.section}>
         <Text style={styles.label}>{t('settings.account')}</Text>
         <Text style={styles.value}>{session?.user?.email ?? '—'}</Text>
@@ -155,7 +195,11 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.label}>日志回传</Text>
         <Text style={[styles.value, { marginBottom: spacing.sm }]}>出现闪退等问题时自动上报日志</Text>
-        <TouchableOpacity style={styles.actionButton} onPress={() => { logger.flush(); alert('日志已上报'); }}>
+        <TouchableOpacity style={styles.actionButton} onPress={async () => {
+          logger.info('Manual log upload triggered');
+          const result = await logger.flush();
+          alert(`上报结果: ${result}`);
+        }}>
           <Text style={styles.actionButtonText}>立即上报日志</Text>
         </TouchableOpacity>
       </View>
@@ -163,6 +207,7 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.label}>{t('settings.about')}</Text>
         <Text style={styles.value}>{t('settings.version')} {Constants.expoConfig?.version ?? '0.1.0'}</Text>
+        <VersionSection />
       </View>
 
       <TouchableOpacity style={styles.dangerButton} onPress={handleSignOut}>
@@ -170,13 +215,13 @@ export default function SettingsScreen() {
       </TouchableOpacity>
 
       <SpeechPlayer visible={showSpeech} onClose={() => setShowSpeech(false)} />
-    </View>
+    </ScrollView>
   );
 }
 
 function makeStyles(c: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: c.background, padding: spacing.xl },
+    container: { backgroundColor: c.background },
     section: { marginBottom: spacing.xl },
     label: { fontSize: fontSize.sm, color: c.textMuted, textTransform: 'uppercase', marginBottom: spacing.xs },
     value: { fontSize: fontSize.lg, color: c.text, fontWeight: '500' },
