@@ -69,9 +69,10 @@ export function useVersionCheck() {
 
   const downloadAPK = useCallback(async (apkUrl: string) => {
     try {
+      Alert.alert('下载中', '正在下载新版本，请稍候...');
       await Linking.openURL(apkUrl);
     } catch (err: any) {
-      console.log('[OTA] download failed:', err?.message || err);
+      Alert.alert('下载失败', err?.message || '无法下载，请在浏览器中打开链接');
     }
   }, []);
 
