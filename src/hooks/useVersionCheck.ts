@@ -72,9 +72,14 @@ export function useVersionCheck() {
       const filename = apkUrl.split('/').pop() || 'app.apk';
       const uri = `${FileSystem.cacheDirectory}${filename}`;
       await FileSystem.downloadAsync(apkUrl, uri);
-      await Linking.openURL(uri);
-    } catch {
-      // User may have cancelled the install
+      if (Platform.OS === 'android') {
+        const contentUri = await FileSystem.getContentUriAsync(uri);
+        await Linking.openURL(contentUri);
+      } else {
+        await Linking.openURL(uri);
+      }
+    } catch (err: any) {
+      console.log('[OTA] download failed:', err?.message || err);
     }
   }, []);
 
