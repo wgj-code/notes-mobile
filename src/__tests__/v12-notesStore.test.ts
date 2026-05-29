@@ -115,13 +115,16 @@ describe('notesStore V1.2 — createFolder', () => {
     expect(useNotesStore.getState().folders).toContainEqual(mockFolder);
   });
 
-  it('throws on failure', async () => {
+  it('falls back to local on failure', async () => {
     const q = makeQuery({
       single: jest.fn().mockResolvedValue({ data: null, error: { message: 'fail' } }),
     });
     (supabase.from as jest.Mock).mockReturnValue(q);
 
-    await expect(useNotesStore.getState().createFolder('Work')).rejects.toBeDefined();
+    await useNotesStore.getState().createFolder('Work');
+    const folders = useNotesStore.getState().folders;
+    expect(folders.length).toBe(1);
+    expect(folders[0].name).toBe('Work');
   });
 });
 

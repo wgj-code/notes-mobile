@@ -272,7 +272,14 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       .select('*')
       .order('name', { ascending: true });
 
-    if (error) return;
+    if (error) {
+      // Offline fallback: read from local cache
+      const localFolders = getAllLocalFolders();
+      if (localFolders.length > 0) {
+        set({ folders: localFolders as Folder[] });
+      }
+      return;
+    }
     const folders = (data ?? []) as Folder[];
     set({ folders });
 
@@ -284,48 +291,81 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
 
   createFolder: async (name, parentId = null) => {
-    const { data, error } = await supabase
-      .from('folders')
-      .insert({ name, parent_id: parentId })
-      .select()
-      .single();
-    if (error) throw error;
-    set({ folders: [...get().folders, data as Folder] });
+    try {
+      const { data, error } = await supabase
+        .from('folders')
+        .insert({ name, parent_id: parentId })
+        .select()
+        .single();
+      if (error) throw error;
+      set({ folders: [...get().folders, data as Folder] });
+    } catch {
+      // Offline fallback: create locally with temp ID
+      const tempFolder: Folder = {
+        id: crypto.randomUUID(),
+        name,
+        parent_id: parentId,
+        created_at: new Date().toISOString(),
+        is_dirty: 1,
+      } as Folder;
+      set({ folders: [...get().folders, tempFolder] });
+      upsertLocalFolders([{ ...tempFolder, is_dirty: 1 }]).catch(() => {});
+    }
   },
 
   deleteFolder: async (id) => {
-    const { error } = await supabase
-      .from('folders')
-      .delete()
-      .eq('id', id);
-    if (error) throw error;
+    try {
+      const { error } = await supabase
+        .from('folders')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
 
-    // Move notes in this folder to uncategorized
-    const affectedNotes = get().notes.filter((n) => n.folder_id === id);
-    for (const note of affectedNotes) {
-      await supabase.from('notes').update({ folder_id: null }).eq('id', note.id);
+      // Move notes in this folder to uncategorized
+      const affectedNotes = get().notes.filter((n) => n.folder_id === id);
+      for (const note of affectedNotes) {
+        await supabase.from('notes').update({ folder_id: null }).eq('id', note.id);
+      }
+
+      set({
+        folders: get().folders.filter((f) => f.id !== id),
+        notes: get().notes.map((n) =>
+          n.folder_id === id ? { ...n, folder_id: null } : n
+        ),
+        selectedFolderId: get().selectedFolderId === id ? null : get().selectedFolderId,
+      });
+    } catch {
+      // Offline: soft delete locally, move notes to uncategorized
+      set({
+        folders: get().folders.filter((f) => f.id !== id),
+        notes: get().notes.map((n) =>
+          n.folder_id === id ? { ...n, folder_id: null } : n
+        ),
+        selectedFolderId: get().selectedFolderId === id ? null : get().selectedFolderId,
+      });
     }
-
-    set({
-      folders: get().folders.filter((f) => f.id !== id),
-      notes: get().notes.map((n) =>
-        n.folder_id === id ? { ...n, folder_id: null } : n
-      ),
-      selectedFolderId: get().selectedFolderId === id ? null : get().selectedFolderId,
-    });
   },
 
   moveNoteToFolder: async (noteId, folderId) => {
-    const { error } = await supabase
-      .from('notes')
-      .update({ folder_id: folderId })
-      .eq('id', noteId);
-    if (error) throw error;
-    set({
-      notes: get().notes.map((n) =>
-        n.id === noteId ? { ...n, folder_id: folderId, updated_at: new Date().toISOString() } : n
-      ),
-    });
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .update({ folder_id: folderId })
+        .eq('id', noteId);
+      if (error) throw error;
+      set({
+        notes: get().notes.map((n) =>
+          n.id === noteId ? { ...n, folder_id: folderId, updated_at: new Date().toISOString() } : n
+        ),
+      });
+    } catch {
+      // Offline: update locally
+      set({
+        notes: get().notes.map((n) =>
+          n.id === noteId ? { ...n, folder_id: folderId, is_dirty: 1, updated_at: new Date().toISOString() } : n
+        ),
+      });
+    }
   },
 
   // ── UI actions ───────────────────────────────────────────────────────
