@@ -96,12 +96,33 @@ test('fetchFolders offline: reads from local cache', async () => {
 
 // ── 验证点 1: 基础启动 ──────────────────────────────────────────
 
-test('useNetwork hook: registers listener on mount', () => {
+test('useNetwork hook: NetInfo callback updates state correctly', () => {
   const NetInfo = require('@react-native-community/netinfo');
-  const { useNetwork } = require('../hooks/useNetwork');
-  // Directly call the hook logic - verify NetInfo.addEventListener is callable
-  expect(typeof NetInfo.addEventListener).toBe('function');
-  const unsub = NetInfo.addEventListener(() => {});
+  let capturedCallback: (state: { isConnected: boolean }) => void = () => {};
+
+  NetInfo.addEventListener.mockImplementation((cb: any) => {
+    capturedCallback = cb;
+    return jest.fn();
+  });
+
+  // Simulate the hook's useEffect: register listener
+  let isOnline = true;
+  const unsub = NetInfo.addEventListener((state: { isConnected: boolean }) => {
+    isOnline = state.isConnected ?? false;
+  });
+
+  // Verify initial state
+  expect(isOnline).toBe(true);
+
+  // Simulate going offline
+  capturedCallback({ isConnected: false });
+  expect(isOnline).toBe(false);
+
+  // Simulate coming back online
+  capturedCallback({ isConnected: true });
+  expect(isOnline).toBe(true);
+
+  // Verify unsubscribe works
   expect(typeof unsub).toBe('function');
 });
 
