@@ -9,6 +9,7 @@ export interface Note {
   updated_at: string;
   deleted_at: string | null;
   shared?: boolean;
+  version?: number;
 }
 
 export interface Folder {
@@ -18,6 +19,7 @@ export interface Folder {
   parent_id: string | null;
   created_at: string;
   updated_at: string;
+  version?: number;
 }
 
 export type FeedbackCategory = 'bug' | 'feature' | 'improvement' | 'other';

@@ -52,6 +52,10 @@ interface NotesState {
   setOnline: (online: boolean) => void;
 
   syncLocalToRemote: () => Promise<void>;
+
+  // Realtime handlers
+  handleRealtimeNoteChange: (payload: any) => void;
+  handleRealtimeFolderChange: (payload: any) => void;
 }
 
 export const useNotesStore = create<NotesState>((set, get) => ({
@@ -162,22 +166,34 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
 
   updateNote: async (id, title, content, folderId, tags) => {
+    const note = get().notes.find((n) => n.id === id);
+    if (!note) return;
+
     const updates: Record<string, any> = { title, content };
     if (folderId !== undefined) updates.folder_id = folderId;
     if (tags !== undefined) updates.tags = tags;
 
+    // 乐观锁：带 version 检查
+    const currentVersion = note.version || 1;
+    updates.version = currentVersion + 1;
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('notes')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('version', currentVersion)
+        .select()
+        .single();
+
       if (error) throw error;
+      if (!data) {
+        // 版本冲突：记录被其他端修改，LWW 降级
+        console.log('[B-002] Version conflict detected, using LWW');
+      }
     } catch {
       // Offline: update locally and mark dirty
-      const note = get().notes.find((n) => n.id === id);
-      if (note) {
-        upsertLocalNote({ ...note, ...updates, is_dirty: 1 } as any).catch(() => {});
-      }
+      upsertLocalNote({ ...note, ...updates, is_dirty: 1 } as any).catch(() => {});
     }
 
     set({
@@ -190,6 +206,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
               ...(folderId !== undefined ? { folder_id: folderId } : {}),
               ...(tags !== undefined ? { tags } : {}),
               updated_at: new Date().toISOString(),
+              version: currentVersion + 1,
             }
           : n
       ),
@@ -389,6 +406,55 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       set({ syncStatus: 'synced' });
     } catch {
       set({ syncStatus: 'pending' });
+    }
+  },
+
+  // ── Realtime ───────────────────────────────────────────────────────
+
+  handleRealtimeNoteChange: (payload: any) => {
+    const { eventType, new: newRecord, old: oldRecord } = payload;
+
+    switch (eventType) {
+      case 'INSERT':
+        // 新笔记从其他端插入
+        if (!get().notes.find((n) => n.id === newRecord.id)) {
+          set({ notes: [newRecord as Note, ...get().notes] });
+        }
+        break;
+      case 'UPDATE':
+        // 笔记从其他端更新
+        set({
+          notes: get().notes.map((n) =>
+            n.id === newRecord.id ? { ...n, ...newRecord } : n
+          ),
+        });
+        break;
+      case 'DELETE':
+        // 笔记从其他端删除
+        set({ notes: get().notes.filter((n) => n.id !== oldRecord.id) });
+        break;
+    }
+  },
+
+  handleRealtimeFolderChange: (payload: any) => {
+    const { eventType, new: newRecord, old: oldRecord } = payload;
+
+    switch (eventType) {
+      case 'INSERT':
+        if (!get().folders.find((f) => f.id === newRecord.id)) {
+          set({ folders: [...get().folders, newRecord as Folder] });
+        }
+        break;
+      case 'UPDATE':
+        set({
+          folders: get().folders.map((f) =>
+            f.id === newRecord.id ? { ...f, ...newRecord } : f
+          ),
+        });
+        break;
+      case 'DELETE':
+        set({ folders: get().folders.filter((f) => f.id !== oldRecord.id) });
+        break;
     }
   },
 }));
