@@ -1,0 +1,70 @@
+appId: com.wgjcode.notes
+env:
+  NOTE_TITLE: "E2E RecycleBin Test"
+  NOTE_BODY: "To be deleted and restored"
+---
+- launchApp:
+    clearState: true
+- launchApp
+
+- extendedWaitUntil:
+    visible:
+      id: "fab-create"
+    timeout: 15000
+
+# 创建笔记
+- tapOn:
+    id: "fab-create"
+- extendedWaitUntil:
+    visible:
+      id: "note-title-input"
+    timeout: 10000
+- tapOn:
+    id: "note-title-input"
+- inputText: ${NOTE_TITLE}
+- tapOn:
+    id: "note-content-editor"
+- inputText: ${NOTE_BODY}
+- tapOn:
+    id: "btn-save"
+- extendedWaitUntil:
+    visible: ${NOTE_TITLE}
+    timeout: 10000
+
+# 删除
+- tapOn: ${NOTE_TITLE}
+- tapOn:
+    id: "btn-delete"
+- tapOn: "确认"
+- extendedWaitUntil:
+    notVisible: ${NOTE_TITLE}
+    timeout: 10000
+- assertNotVisible: ${NOTE_TITLE}
+
+# 打开回收站
+- tapOn:
+    id: "btn-recycle-bin"
+- extendedWaitUntil:
+    visible: ${NOTE_TITLE}
+    timeout: 10000
+- assertVisible: ${NOTE_TITLE}
+
+# 恢复
+- tapOn:
+    id: "btn-restore"
+- extendedWaitUntil:
+    notVisible: ${NOTE_TITLE}
+    timeout: 10000
+
+# 返回列表验证
+- back
+- extendedWaitUntil:
+    visible: ${NOTE_TITLE}
+    timeout: 10000
+- assertVisible: ${NOTE_TITLE}
+
+# 清理
+- tapOn: ${NOTE_TITLE}
+- tapOn:
+    id: "btn-delete"
+- tapOn: "确认"

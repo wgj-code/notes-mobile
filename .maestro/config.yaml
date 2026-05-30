@@ -1,0 +1,16 @@
+appId: com.wgjcode.notes
+
+flows:
+  - 'flows/**'
+
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - crud/note-crud-flow
+    - search/search-notes-flow
+    - recycle-bin/delete-and-restore-flow
+    - auto-save/auto-save-on-leave-flow
+
+platform:
+  android:
+    disableAnimations: true

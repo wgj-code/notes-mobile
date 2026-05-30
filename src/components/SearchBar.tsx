@@ -39,6 +39,7 @@ export default function SearchBar() {
   return (
     <View style={styles.container}>
       <TextInput
+        testID="search-input"
         style={styles.input}
         placeholder={t('search.placeholder')}
         placeholderTextColor={colors.textMuted}
@@ -48,7 +49,7 @@ export default function SearchBar() {
         returnKeyType="search"
       />
       {localQuery.length > 0 && (
-        <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
+        <TouchableOpacity testID="search-clear" onPress={handleClear} style={styles.clearButton}>
           <Text style={styles.clearText}>x</Text>
         </TouchableOpacity>
       )}

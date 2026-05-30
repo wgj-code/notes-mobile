@@ -1,0 +1,68 @@
+appId: com.wgjcode.notes
+env:
+  NOTE_TITLE: "E2E CRUD Test"
+  NOTE_BODY: "Test note body"
+  EDITED_BODY: "Edited content"
+---
+- launchApp:
+    clearState: true
+- launchApp
+
+- extendedWaitUntil:
+    visible:
+      id: "fab-create"
+    timeout: 15000
+
+# 新建笔记
+- tapOn:
+    id: "fab-create"
+- extendedWaitUntil:
+    visible:
+      id: "note-title-input"
+    timeout: 10000
+- tapOn:
+    id: "note-title-input"
+- inputText: ${NOTE_TITLE}
+- tapOn:
+    id: "note-content-editor"
+- inputText: ${NOTE_BODY}
+- tapOn:
+    id: "btn-save"
+
+# 验证列表可见
+- extendedWaitUntil:
+    visible: ${NOTE_TITLE}
+    timeout: 10000
+- assertVisible: ${NOTE_TITLE}
+
+# 打开详情
+- tapOn: ${NOTE_TITLE}
+- extendedWaitUntil:
+    visible:
+      id: "note-title-input"
+    timeout: 10000
+- assertVisible: ${NOTE_BODY}
+
+# 编辑
+- tapOn:
+    id: "note-content-editor"
+- eraseText: 50
+- inputText: ${EDITED_BODY}
+- tapOn:
+    id: "btn-save"
+
+# 验证编辑后
+- extendedWaitUntil:
+    visible: ${NOTE_TITLE}
+    timeout: 10000
+- tapOn: ${NOTE_TITLE}
+- assertVisible: ${EDITED_BODY}
+
+# 删除
+- tapOn:
+    id: "btn-delete"
+- tapOn: "确认"
+- extendedWaitUntil:
+    notVisible: ${NOTE_TITLE}
+    timeout: 10000
+- assertNotVisible: ${NOTE_TITLE}

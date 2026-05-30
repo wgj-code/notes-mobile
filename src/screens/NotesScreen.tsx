@@ -153,6 +153,7 @@ export default function NotesScreen({ navigation }: any) {
           <Text style={styles.toolbarActionText}>{t('notes.import')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          testID="btn-recycle-bin"
           style={styles.toolbarAction}
           onPress={() => navigation.navigate('RecycleBin')}
         >
@@ -188,7 +189,7 @@ export default function NotesScreen({ navigation }: any) {
       />
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab} onPress={handleCreate}>
+      <TouchableOpacity testID="fab-create" style={styles.fab} onPress={handleCreate}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
 

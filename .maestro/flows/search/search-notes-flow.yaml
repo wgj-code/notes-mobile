@@ -1,0 +1,101 @@
+appId: com.wgjcode.notes
+env:
+  SEARCH_KEYWORD: "MaestroSearch"
+  TITLE_1: "MaestroSearch Alpha"
+  TITLE_2: "MaestroSearch Beta"
+  UNRELATED: "Unrelated Note"
+---
+- launchApp:
+    clearState: true
+- launchApp
+
+- extendedWaitUntil:
+    visible:
+      id: "fab-create"
+    timeout: 15000
+
+# 创建测试笔记 1
+- tapOn:
+    id: "fab-create"
+- extendedWaitUntil:
+    visible:
+      id: "note-title-input"
+    timeout: 10000
+- tapOn:
+    id: "note-title-input"
+- inputText: ${TITLE_1}
+- tapOn:
+    id: "btn-save"
+- extendedWaitUntil:
+    visible: ${TITLE_1}
+    timeout: 10000
+
+# 创建测试笔记 2
+- tapOn:
+    id: "fab-create"
+- extendedWaitUntil:
+    visible:
+      id: "note-title-input"
+    timeout: 10000
+- tapOn:
+    id: "note-title-input"
+- inputText: ${TITLE_2}
+- tapOn:
+    id: "btn-save"
+- extendedWaitUntil:
+    visible: ${TITLE_2}
+    timeout: 10000
+
+# 创建无关笔记
+- tapOn:
+    id: "fab-create"
+- extendedWaitUntil:
+    visible:
+      id: "note-title-input"
+    timeout: 10000
+- tapOn:
+    id: "note-title-input"
+- inputText: ${UNRELATED}
+- tapOn:
+    id: "btn-save"
+- extendedWaitUntil:
+    visible: ${UNRELATED}
+    timeout: 10000
+
+# 搜索
+- tapOn:
+    id: "search-input"
+- inputText: ${SEARCH_KEYWORD}
+- hideKeyboard
+
+# 验证结果
+- assertVisible: ${TITLE_1}
+- assertVisible: ${TITLE_2}
+- assertNotVisible: ${UNRELATED}
+
+# 清除搜索
+- tapOn:
+    id: "search-clear"
+- assertVisible: ${UNRELATED}
+
+# 清理
+- tapOn: ${TITLE_1}
+- tapOn:
+    id: "btn-delete"
+- tapOn: "确认"
+- extendedWaitUntil:
+    notVisible: ${TITLE_1}
+    timeout: 10000
+
+- tapOn: ${TITLE_2}
+- tapOn:
+    id: "btn-delete"
+- tapOn: "确认"
+- extendedWaitUntil:
+    notVisible: ${TITLE_2}
+    timeout: 10000
+
+- tapOn: ${UNRELATED}
+- tapOn:
+    id: "btn-delete"
+- tapOn: "确认"

@@ -71,6 +71,7 @@ export default function RecycleBinScreen({ navigation }: any) {
       </View>
       <View style={styles.itemActions}>
         <TouchableOpacity
+          testID="btn-restore"
           style={[styles.actionButton, { backgroundColor: colors.primary + '20' }]}
           onPress={() => handleRestore(item)}
         >
@@ -79,6 +80,7 @@ export default function RecycleBinScreen({ navigation }: any) {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          testID="btn-permanent-delete"
           style={[styles.actionButton, { backgroundColor: colors.danger + '20' }]}
           onPress={() => handlePermanentDelete(item)}
         >

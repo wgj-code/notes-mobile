@@ -55,6 +55,7 @@ export default function MarkdownEditor({ value, onChangeText, placeholder }: Pro
 
       {/* Editor */}
       <TextInput
+        testID="note-content-editor"
         ref={inputRef}
         style={styles.editor}
         value={value}

@@ -114,13 +114,13 @@ export default function NoteDetailScreen({ route, navigation }: any) {
               ✓ {t('notes.autoSaved')}
             </Text>
           )}
-          <TouchableOpacity onPress={saveAndClose}>
+          <TouchableOpacity testID="btn-save" onPress={saveAndClose}>
             <Text style={{ color: colors.primary, fontSize: fontSize.md }}>
               {t('notes.saveAndClose')}
             </Text>
           </TouchableOpacity>
           {isEditing && (
-            <TouchableOpacity onPress={handleDelete}>
+            <TouchableOpacity testID="btn-delete" onPress={handleDelete}>
               <Text style={{ color: colors.danger, fontSize: fontSize.md }}>{t('common.delete')}</Text>
             </TouchableOpacity>
           )}
@@ -258,6 +258,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     >
       {/* Title input */}
       <TextInput
+        testID="note-title-input"
         style={styles.titleInput}
         placeholder={t('notes.title')}
         value={title}
@@ -307,6 +308,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
       {/* Content area: edit or preview */}
       {viewMode === 'edit' ? (
         <MarkdownEditor
+          testID="note-content-editor"
           value={content}
           onChangeText={setContent}
           placeholder={t('notes.startWriting')}
