@@ -1,9 +1,16 @@
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
-const LOG_API_URL = 'http://8.133.196.220/api/logs';
 const FLUSH_INTERVAL = 30000;
-const MAX_BUFFER = 20;
+const MAX_BUFFER = 50;
+
+// B-012: 日志写入 Supabase Edge Function（logs-ingest）
+function getLogApiUrl(): string {
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+  return supabaseUrl
+    ? `${supabaseUrl}/functions/v1/logs-ingest`
+    : 'http://8.133.196.220/api/logs'; // fallback
+}
 
 interface LogEntry {
   level: 'error' | 'warn' | 'info' | 'event';
@@ -16,6 +23,7 @@ interface LogEntry {
     osVersion: string | null;
     appVersion: string;
   };
+  source: 'mobile';
   timestamp: string;
 }
 
@@ -38,6 +46,7 @@ function createEntry(level: LogEntry['level'], module: string, message: string, 
     metadata,
     stack: stack?.slice(0, 3000),
     device: getDeviceInfo(),
+    source: 'mobile',
     timestamp: new Date().toISOString(),
   };
 }
@@ -48,7 +57,7 @@ async function flush(): Promise<string> {
   buffer = [];
 
   try {
-    const resp = await fetch(LOG_API_URL, {
+    const resp = await fetch(getLogApiUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ logs: batch }),

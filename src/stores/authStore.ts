@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 interface AuthState {
   session: Session | null;
@@ -24,6 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data: { session } } = await supabase.auth.getSession();
       set({ session });
     } catch (err: any) {
+      logger.error('authStore', 'signIn failed', err, { email });
       if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
         throw new Error('需要网络才能登录，请检查网络连接后重试');
       }
@@ -38,6 +40,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data: { session } } = await supabase.auth.getSession();
       set({ session });
     } catch (err: any) {
+      logger.error('authStore', 'signUp failed', err, { email });
       if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
         throw new Error('需要网络才能注册，请检查网络连接后重试');
       }

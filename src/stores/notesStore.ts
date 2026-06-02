@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Note, Folder } from '../types';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import {
   upsertLocalNotes,
   getAllLocalNotes,
@@ -126,6 +127,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       }
     } catch (err: any) {
       // Network error: fall back to local cache
+      logger.error('notesStore', 'fetchNotes failed', err, { offlineFallback: true });
       const localNotes = getAllLocalNotes();
       if (localNotes.length > 0) {
         set({ notes: localNotes as Note[], loading: false, isOnline: false });
@@ -145,8 +147,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       if (error) throw error;
       set({ notes: [data as Note, ...get().notes] });
       return data as Note;
-    } catch {
+    } catch (err) {
       // Offline: create locally with dirty flag
+      logger.warn('notesStore', 'createNote offline fallback', { title, error: String(err) });
       const localNote: Note & { is_dirty: number } = {
         id: crypto.randomUUID(),
         title,
@@ -217,8 +220,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       const { error } = await supabase.rpc('soft_delete_note', { p_note_id: id });
       if (error) throw error;
-    } catch {
+    } catch (err) {
       // Offline: mark as deleted locally
+      logger.warn('notesStore', 'deleteNote offline fallback', { noteId: id, error: String(err) });
       deleteLocalNote(id).catch(() => {});
     }
     set({ notes: get().notes.filter((n) => n.id !== id) });
