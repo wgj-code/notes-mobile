@@ -1,11 +1,12 @@
 #!/bin/bash
-# B-001 离线功能 ADB 自动化验证脚本
+# B-011 真机自动化验证脚本（含截图 + logcat）
 # 用法: bash scripts/verify-offline.sh
 # 前提: $ADB 已连接真机, app 已安装
 set -euo pipefail
 
 ADB="${ANDROID_HOME:-/home/wgj/android-sdk}/platform-tools/adb"
 PKG="com.wgjcode.notes"
+OUTPUT_DIR="test-results/$(date +%Y%m%d_%H%M%S)"
 PASS=0
 FAIL=0
 RESULTS=()
@@ -13,6 +14,26 @@ RESULTS=()
 log() { echo "[$(date +%H:%M:%S)] $1"; }
 pass() { PASS=$((PASS+1)); RESULTS+=("✅ $1"); log "✅ PASS: $1"; }
 fail() { FAIL=$((FAIL+1)); RESULTS+=("❌ $1: $2"); log "❌ FAIL: $1 — $2"; }
+
+# 截图函数：截图并拉取到本地
+screenshot() {
+  local name="$1"
+  local remote="/sdcard/screenshot_${name}.png"
+  local local="$OUTPUT_DIR/screenshot_${name}.png"
+  $ADB shell screencap -p "$remote" 2>/dev/null
+  $ADB pull "$remote" "$local" 2>/dev/null
+  $ADB shell rm "$remote" 2>/dev/null
+  log "  📸 截图: $local"
+}
+
+# logcat 采集函数
+capture_logcat() {
+  local name="$1"
+  local local="$OUTPUT_DIR/logcat_${name}.txt"
+  $ADB logcat -d > "$local" 2>/dev/null
+  local lines=$(wc -l < "$local")
+  log "  📋 日志: $local ($lines 行)"
+}
 
 cleanup() {
   log "恢复设备状态..."
@@ -34,6 +55,9 @@ if [ ! -f "$APK_PATH" ]; then
   echo "❌ APK 不存在, 请先执行 bash scripts/build-debug-apk.sh"
   exit 1
 fi
+
+mkdir -p "$OUTPUT_DIR"
+log "输出目录: $OUTPUT_DIR"
 
 log "安装 APK..."
 $ADB install -r -t "$APK_PATH" 2>&1 | tail -1
@@ -140,6 +164,12 @@ else
   pass "离线操作（无 log 但未 crash）"
 fi
 
+# ── 截图 + logcat 采集 ──────────────────────────────────────
+log ""
+log "=== 采集截图和日志 ==="
+screenshot "final_state"
+capture_logcat "full_session"
+
 # ── 最终报告 ──────────────────────────────────────────────────
 log ""
 log "========================================"
@@ -149,6 +179,8 @@ for r in "${RESULTS[@]}"; do
   log "  $r"
 done
 log "========================================"
+log "📸 截图目录: $OUTPUT_DIR"
+log "📋 日志目录: $OUTPUT_DIR"
 
 if [ "$FAIL" -gt 0 ]; then
   exit 1
