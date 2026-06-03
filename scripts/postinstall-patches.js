@@ -46,14 +46,11 @@ patchFile(
   'expo-modules-core',
   expoCoreGradle,
   (c) => {
-    if (c.includes('findByName')) return c; // already patched
-    return c.replace(
-      '  project.afterEvaluate {\n    publishing {',
-      '  project.afterEvaluate {\n    if (components.findByName("release") != null) {\n    publishing {'
-    ).replace(
-      /    }\n  }\n\}/m,
-      '    }\n    }\n  }\n}'
-    );
+    // B-015: expo-modules-core >=52 已内置 findByName 检查，跳过补丁
+    // 旧版补丁正则会匹配错误位置引入多余 }，导致 Groovy 编译失败
+    if (c.includes('findByName')) return c;
+    console.log('[expo-modules-core] findByName not found, patch may be needed (manual check required)');
+    return c;
   }
 );
 
