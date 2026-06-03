@@ -1,0 +1,80 @@
+# B-015: Mobile 本地构建 CI/CD
+# 不依赖 EAS，使用 GitHub Actions runner 本地构建 APK
+# 增量策略：缓存 node_modules + .gradle + build 目录
+
+name: Build Android APK (Local)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'android/**'
+      - 'app.json'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx jest --forceExit --detectOpenHandles
+
+  build:
+    name: Build APK
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      # 增量策略：缓存关键目录
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            android/.gradle
+            android/app/build
+          key: android-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            android-${{ runner.os }}-
+
+      - run: npm ci
+
+      # 加载环境变量
+      - name: Load .env
+        run: |
+          if [ -f .env ]; then
+            set -a; source .env; set +a
+            echo "Loaded $(grep -c EXPO_PUBLIC .env) EXPO_PUBLIC_* vars"
+          fi
+
+      # 复用现有构建脚本（增量构建）
+      - name: Build debug APK (slim)
+        run: bash scripts/build-debug-apk.sh --slim
+
+      # 上传 APK 产物
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: build-*.apk
+          retention-days: 30
