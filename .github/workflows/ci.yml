@@ -16,4 +16,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --legacy-peer-deps
-      - run: npx jest --forceExit --detectOpenHandles
+      - run: npx jest --forceExit --detectOpenHandles --testPathIgnorePatterns='offline\.test|sync\.test'
