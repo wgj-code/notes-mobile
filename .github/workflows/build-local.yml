@@ -47,16 +47,15 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
-      # 增量策略：缓存关键目录
+      # 增量策略：缓存 Gradle 构建目录（不缓存 node_modules，确保 postinstall 补丁执行）
       - uses: actions/cache@v4
         with:
           path: |
-            node_modules
             android/.gradle
             android/app/build
-          key: android-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: android-gradle-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            android-${{ runner.os }}-
+            android-gradle-${{ runner.os }}-
 
       - run: npm install --legacy-peer-deps
 
