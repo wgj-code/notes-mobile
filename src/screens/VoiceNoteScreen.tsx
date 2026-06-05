@@ -61,6 +61,13 @@ interface Props {
   navigation: any;
 }
 
+// 格式化时长（纯函数，组件外定义）
+const formatDuration = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
 // L1: 静态场景选项（组件外定义，避免每次渲染重建）
 const SCENE_OPTIONS: { type: SceneType; label: string; icon: string }[] = [
   { type: 'meeting', label: '会议', icon: '👥' },
@@ -81,13 +88,6 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
 
   const currentScene = manualScene || recorder.sceneType;
   const styles = useMemo(() => makeStyles(colors), [colors]);
-
-  // 格式化时长
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
 
   // 调用Edge Function生成笔记
   const generateNote = useCallback(async (voiceNoteId: string, rawText: string, scene: SceneType) => {
