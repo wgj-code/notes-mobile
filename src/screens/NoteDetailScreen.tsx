@@ -217,11 +217,18 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     if (!isEditing || !noteId) return;
     try {
       await shareNote(noteId);
-      const shareUrl = `https://waveletvolt.xin/share/${noteId}`;
+      // 分享为 Markdown 文件（兼容性更好）
+      const filename = title.trim() || 'note';
+      const safeFilename = filename.replace(/[/\\?%*:|"<>]/g, '-');
+      const markdown = `# ${title}\n\n${content}`;
+      const fileUri = `${FileSystem.cacheDirectory}${safeFilename}.md`;
+      await FileSystem.writeAsStringAsync(fileUri, markdown, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(shareUrl);
+        await Sharing.shareAsync(fileUri);
       } else {
-        Alert.alert(t('notes.shareLink'), shareUrl);
+        Alert.alert(t('notes.shareLink'), fileUri);
       }
       Alert.alert('', t('notes.shareSuccess'));
     } catch {

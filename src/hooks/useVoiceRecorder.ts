@@ -8,6 +8,7 @@ import { createStreamingSTT, type StreamingSttEngine, type SttStream } from 'rea
 import { assetModelPath } from 'react-native-sherpa-onnx';
 import SherpaOnnx from 'react-native-sherpa-onnx/src/NativeSherpaOnnx';
 import { identifyScene, type SceneType } from '../lib/scene-detector';
+import { addPunctuation } from '../lib/punctuation';
 import { logger } from '../lib/logger';
 
 export type RecordingStatus = 'idle' | 'initializing' | 'recording' | 'paused' | 'stopping' | 'transcribing' | 'error';
@@ -288,15 +289,19 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
           logger.info('VoiceRecorder', 'STT result', { textLength: fullText.length, textPreview: fullText.substring(0, 200) });
 
           if (fullText) {
+            // 标点后处理
+            const textWithPunctuation = addPunctuation(fullText);
+            logger.info('VoiceRecorder', 'Punctuation added', { original: fullText.length, processed: textWithPunctuation.length });
+
             const segment: TranscriptSegment = {
-              text: fullText,
+              text: textWithPunctuation,
               timestamp: Date.now(),
               isFinal: true,
             };
             setTranscript([segment]);
-            setCurrentText(fullText);
+            setCurrentText(textWithPunctuation);
 
-            const detectedScene = identifyScene(fullText);
+            const detectedScene = identifyScene(textWithPunctuation);
             setSceneType(detectedScene);
 
             setStatus('idle');
@@ -304,7 +309,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
             return {
               uri,
-              transcript: fullText,
+              transcript: textWithPunctuation,
               sceneType: detectedScene,
             };
           }
