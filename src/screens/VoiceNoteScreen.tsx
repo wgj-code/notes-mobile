@@ -1,7 +1,7 @@
 // F-001: VoiceNoteScreen
 // 语音笔记界面：录音、实时转写、场景识别、笔记生成
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -61,11 +61,18 @@ interface Props {
   navigation: any;
 }
 
-export default function VoiceNoteScreen({ navigation }: Props) {
-  logger.info('VoiceNote', 'Screen mounted');
-  console.log('[VoiceNote] Screen mounted v0.1.80-fix');
+// L1: 静态场景选项（组件外定义，避免每次渲染重建）
+const SCENE_OPTIONS: { type: SceneType; label: string; icon: string }[] = [
+  { type: 'meeting', label: '会议', icon: '👥' },
+  { type: 'chat', label: '闲聊', icon: '💬' },
+  { type: 'monologue', label: '自言自语', icon: '🤔' },
+  { type: 'unknown', label: '自动识别', icon: '📝' },
+];
+
+// L1: React.memo 防止父组件重渲染连带本组件
+const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Props) {
   const colors = useThemeColors();
-  const { createNote } = useNotesStore();
+  const createNote = useNotesStore(s => s.createNote);
   const recorder = useVoiceRecorder();
   const { status } = recorder;
   const [manualScene, setManualScene] = useState<SceneType | null>(null);
@@ -73,7 +80,7 @@ export default function VoiceNoteScreen({ navigation }: Props) {
   const [generatedNote, setGeneratedNote] = useState<string | null>(null);
 
   const currentScene = manualScene || recorder.sceneType;
-  const styles = makeStyles(colors);
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   // 格式化时长
   const formatDuration = (seconds: number): string => {
@@ -229,13 +236,10 @@ export default function VoiceNoteScreen({ navigation }: Props) {
     }
   }, [currentScene, generateNote, saveRecordingToStorage, createNote, navigation, recorder]);
 
-  // 场景切换
-  const sceneOptions: { type: SceneType; label: string; icon: string }[] = [
-    { type: 'meeting', label: '会议', icon: '👥' },
-    { type: 'chat', label: '闲聊', icon: '💬' },
-    { type: 'monologue', label: '自言自语', icon: '🤔' },
-    { type: 'unknown', label: '自动识别', icon: '📝' },
-  ];
+  // L1: useCallback 缓存场景切换
+  const handleScenePress = useCallback((type: SceneType) => {
+    setManualScene(type === 'unknown' ? null : type);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -265,14 +269,14 @@ export default function VoiceNoteScreen({ navigation }: Props) {
       <View style={styles.sceneCard}>
         <Text style={styles.sceneLabel}>场景识别</Text>
         <View style={styles.sceneOptions}>
-          {sceneOptions.map((option) => (
+          {SCENE_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.type}
               style={[
                 styles.sceneOption,
                 currentScene === option.type && styles.sceneOptionActive,
               ]}
-              onPress={() => setManualScene(option.type === 'unknown' ? null : option.type)}
+              onPress={() => handleScenePress(option.type)}
             >
               <Text style={styles.sceneIcon}>{option.icon}</Text>
               <Text
@@ -382,7 +386,9 @@ export default function VoiceNoteScreen({ navigation }: Props) {
     </ScrollView>
     </SafeAreaView>
   );
-}
+});
+
+export default VoiceNoteScreen;
 
 function makeStyles(c: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
