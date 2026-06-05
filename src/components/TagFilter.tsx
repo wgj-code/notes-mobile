@@ -61,18 +61,16 @@ export default function TagFilter({ selectedTag, onTagSelect }: Props) {
 function makeStyles(c: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
     container: {
-      flexGrow: 0,
-      maxHeight: 50,
+      height: 44,
     },
     content: {
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.xs,
-      gap: spacing.sm,
+      alignItems: 'center',
     },
     chip: {
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs,
-      borderRadius: 16,
+      paddingVertical: 6,
+      borderRadius: 14,
       backgroundColor: c.border,
       marginRight: spacing.sm,
     },

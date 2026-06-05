@@ -2,7 +2,7 @@
   "expo": {
     "name": "迪迪笔记",
     "slug": "notes-mobile",
-    "version": "0.1.69",
+    "version": "0.1.90",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.jpg",
@@ -24,7 +24,7 @@
         "foregroundImage": "./assets/icon.jpg",
         "backgroundColor": "#ffffff"
       },
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.1.0"
     },
     "extra": {
       "eas": {
@@ -55,10 +55,27 @@
       },
       {
         "path": "assets/models/kokoro-int8-multi-lang-v1_1/espeak-ng-data"
+      },
+      {
+        "path": "assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20",
+        "type": "bundle"
+      },
+      {
+        "path": "assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/encoder-epoch-99-avg-1.int8.onnx"
+      },
+      {
+        "path": "assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/decoder-epoch-99-avg-1.int8.onnx"
+      },
+      {
+        "path": "assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/joiner-epoch-99-avg-1.int8.onnx"
+      },
+      {
+        "path": "assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20/tokens.txt"
       }
     ],
     "updates": {
       "url": "https://u.expo.dev/ddf61deb-b15a-4c21-b1fb-ea58317449ea"
-    }
+    },
+    "runtimeVersion": "1.1.0"
   }
 }

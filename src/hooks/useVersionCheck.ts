@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import * as FileSystem from 'expo-file-system';
-import { Linking, Platform } from 'react-native';
+import { Linking, Platform, Alert } from 'react-native';
 
 const VERSION_API = 'http://8.133.196.220/api/version';
 
@@ -26,6 +26,29 @@ export function useVersionCheck() {
   const [result, setResult] = useState<CheckResult | null>(null);
 
   const localVersion = Constants.expoConfig?.version || '0.0.0';
+
+  // 自动检查 OTA 更新
+  useEffect(() => {
+    const autoCheckOTA = async () => {
+      try {
+        console.log('[OTA] Checking for updates...');
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          console.log('[OTA] Update available, fetching...');
+          await Updates.fetchUpdateAsync();
+          console.log('[OTA] Update fetched, reloading...');
+          await Updates.reloadAsync();
+        } else {
+          console.log('[OTA] No update available');
+        }
+      } catch (err: any) {
+        console.error('[OTA] Auto-check failed:', err?.message || err);
+      }
+    };
+
+    // App 启动时自动检查
+    autoCheckOTA();
+  }, []);
 
   const checkForUpdate = useCallback(async () => {
     setChecking(true);
@@ -70,7 +93,7 @@ export function useVersionCheck() {
   const downloadAPK = useCallback(async (apkUrl: string) => {
     try {
       await Linking.openURL(apkUrl);
-    } catch (err: any) {
+    } catch (err) {
       Alert.alert('下载失败', '无法打开下载链接，请在浏览器中手动打开：\n' + apkUrl);
     }
   }, []);

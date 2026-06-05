@@ -1,6 +1,6 @@
 {
   "name": "notes-mobile",
-  "version": "0.1.69",
+  "version": "0.1.79",
   "main": "node_modules/expo/AppEntry.js",
   "private": true,
   "scripts": {
@@ -25,6 +25,7 @@
     "expo": "~52.0.0",
     "expo-asset": "~11.0.0",
     "expo-av": "~15.0.2",
+    "expo-background-fetch": "~13.0.6",
     "expo-constants": "~17.0.0",
     "expo-device": "~6.0.0",
     "expo-document-picker": "~13.0.3",
@@ -38,6 +39,7 @@
     "expo-speech": "~13.0.1",
     "expo-sqlite": "~15.1.4",
     "expo-status-bar": "~2.0.0",
+    "expo-task-manager": "~12.0.6",
     "expo-updates": "^0.27.5",
     "i18n-js": "^4.4.3",
     "react": "18.3.1",

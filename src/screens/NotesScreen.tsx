@@ -168,6 +168,17 @@ export default function NotesScreen({ navigation }: any) {
         <SyncStatus />
       </View>
 
+      {/* Voice note button - separate row for better visibility */}
+      <View style={styles.voiceNoteRow}>
+        <TouchableOpacity
+          testID="btn-voice-note"
+          style={styles.voiceNoteBtn}
+          onPress={() => navigation.navigate('VoiceNote')}
+        >
+          <Text style={styles.voiceNoteBtnText}>🎤 语音笔记</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Folder tree (collapsible) */}
       {showFolders && (
         <FolderTree onFolderSelect={() => {}} />
@@ -245,6 +256,22 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       fontSize: fontSize.md,
       color: c.primary,
       fontWeight: '500',
+    },
+    voiceNoteRow: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    voiceNoteBtn: {
+      backgroundColor: c.primary,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: borderRadius.sm,
+      alignItems: 'center',
+    },
+    voiceNoteBtnText: {
+      color: '#ffffff',
+      fontSize: fontSize.md,
+      fontWeight: '600',
     },
     fab: {
       position: 'absolute',

@@ -81,8 +81,8 @@ function push(level: LogEntry['level'], module: string, message: string, metadat
 }
 
 export const logger = {
-  error(module: string, message: string, error?: Error, metadata?: Record<string, unknown>) {
-    push('error', module, message, metadata, error?.stack);
+  error(module: string, message: string, metadata?: Record<string, unknown>) {
+    push('error', module, message, metadata);
   },
 
   warn(module: string, message: string, metadata?: Record<string, unknown>) {

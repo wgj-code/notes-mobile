@@ -10,6 +10,7 @@ export const lightColors = {
   border: '#F0F0F0',
   inputBorder: '#DDDDDD',
   danger: '#FF3B30',
+  warning: '#FF9500',
   errorBannerBg: '#FFF3F0',
   errorBannerBorder: '#FFDDD6',
   tagChipBg: '#F0F5FF',
@@ -52,10 +53,13 @@ export const fontSize = {
   lg: 16,
   xl: 18,
   xxl: 22,
+  xxxl: 32,
   title: 28,
 };
 
 export const borderRadius = {
   sm: 8,
+  md: 12,
   lg: 28,
+  full: 9999,
 };
