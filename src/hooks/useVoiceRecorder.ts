@@ -280,6 +280,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
               }
             } catch (streamErr: any) {
               logger.error('VoiceRecorder', 'STT stream error', { error: streamErr?.message, attempt: retry + 1 });
+              try { await stream.release(); } catch (_) {}
               if (retry >= MAX_RETRIES) throw streamErr;
             }
           }
