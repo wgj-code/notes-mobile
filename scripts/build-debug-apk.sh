@@ -31,13 +31,13 @@ if [ -d "$MODEL_SRC" ] && [ ! -d "$MODEL_DST" ]; then
   echo "  Copied TTS model ($(du -sh "$MODEL_DST" | cut -f1))"
 fi
 
-# Copy STT model to Android assets
-STT_SRC="$PROJECT_DIR/assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20"
-STT_DST="$PROJECT_DIR/android/app/src/main/assets/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20"
+# Copy STT model to Android assets (v0.1.95: Paraformer offline model)
+STT_SRC="$PROJECT_DIR/assets/models/sherpa-onnx-paraformer-zh-2024-03-09"
+STT_DST="$PROJECT_DIR/android/app/src/main/assets/models/sherpa-onnx-paraformer-zh-2024-03-09"
 if [ -d "$STT_SRC" ] && [ ! -d "$STT_DST" ]; then
   mkdir -p "$PROJECT_DIR/android/app/src/main/assets/models"
   cp -r "$STT_SRC" "$STT_DST"
-  echo "  Copied STT model ($(du -sh "$STT_DST" | cut -f1))"
+  echo "  Copied Paraformer STT model ($(du -sh "$STT_DST" | cut -f1))"
 fi
 
 # Load .env variables

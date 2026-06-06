@@ -11,6 +11,14 @@ module.exports = {
     getNumSpeakers: jest.fn(() => Promise.resolve(103)),
     destroy: jest.fn(),
   })),
+  // v0.1.95: Mock offline STT (Paraformer)
+  createSTT: jest.fn(() => Promise.resolve({
+    instanceId: 'mock-stt',
+    transcribeFile: jest.fn(() => Promise.resolve({ text: '', tokens: [], timestamps: [] })),
+    transcribeSamples: jest.fn(() => Promise.resolve({ text: '', tokens: [], timestamps: [] })),
+    setConfig: jest.fn(),
+    destroy: jest.fn(),
+  })),
   assetModelPath: jest.fn((path) => ({ type: 'asset', path })),
   autoModelPath: jest.fn((path) => ({ type: 'auto', path })),
   fileModelPath: jest.fn((path) => ({ type: 'file', path })),

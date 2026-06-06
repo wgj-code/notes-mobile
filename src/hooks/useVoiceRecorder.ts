@@ -1,10 +1,11 @@
 // F-001: useVoiceRecorder hook
 // 实现录音+STT离线转写+场景识别
+// v0.1.95: 切换到 Offline Paraformer 模型，提升中文识别准确率
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { createStreamingSTT, type StreamingSttEngine, type SttStream } from 'react-native-sherpa-onnx/stt';
+import { createSTT, type SttEngine } from 'react-native-sherpa-onnx/stt';
 import { assetModelPath } from 'react-native-sherpa-onnx';
 import SherpaOnnx from 'react-native-sherpa-onnx/src/NativeSherpaOnnx';
 import { identifyScene, type SceneType } from '../lib/scene-detector';
@@ -44,24 +45,30 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [sttError, setSttError] = useState<string | null>(null);
 
   const recordingRef = useRef<Audio.Recording | null>(null);
-  const sttRef = useRef<StreamingSttEngine | null>(null);
+  const sttRef = useRef<SttEngine | null>(null);
   const durationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const durationRef = useRef(0); // ref 跟踪真实时长，避免闭包陷阱
 
-  // 初始化STT引擎（streaming 模式——与 streaming-zipformer 模型匹配）
+  // 初始化STT引擎（offline Paraformer 模型——中文识别准确率更高）
   useEffect(() => {
     (async () => {
       try {
-        logger.info('VoiceRecorder', 'Initializing streaming STT engine');
-        const modelPath = assetModelPath('models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20');
+        logger.info('VoiceRecorder', 'Initializing offline Paraformer STT engine');
+        const modelPath = assetModelPath('models/sherpa-onnx-paraformer-zh-2024-03-09');
         logger.info('VoiceRecorder', 'STT model path', { modelPath: JSON.stringify(modelPath) });
 
-        sttRef.current = await createStreamingSTT({
+        // 让 SDK 自动检测模型类型（比手动指定更可靠）
+        // Boolean? / Double? 参数必须显式传值，否则 Native 层 null 会崩溃
+        sttRef.current = await createSTT({
           modelPath,
-          modelType: 'transducer',
+          preferInt8: true,
+          debug: false,
+          numThreads: 2,
+          hotwordsScore: 0,
+          dither: 0,
         });
         setSttReady(true);
-        logger.info('VoiceRecorder', 'Streaming STT engine ready');
+        logger.info('VoiceRecorder', 'Offline Paraformer STT engine ready');
         await logger.flush();
       } catch (err: any) {
         logger.error('VoiceRecorder', 'STT init failed', { error: err?.message || String(err), stack: err?.stack });
@@ -211,80 +218,11 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         }
 
         try {
-          // 解码 WAV 为 PCM float samples
-          const { samples, sampleRate } = await SherpaOnnx.decodeAudioFileToFloatSamples(wavPath, 16000);
-          logger.info('VoiceRecorder', 'WAV decoded', { sampleRate, totalSamples: samples.length, durationSec: (samples.length / sampleRate).toFixed(1) });
-
-          // F7-P0: 音频预处理 — 增益归一化
-          let maxAbs = 0;
-          for (let i = 0; i < samples.length; i++) {
-            const abs = Math.abs(samples[i]);
-            if (abs > maxAbs) maxAbs = abs;
-          }
-          if (maxAbs > 0 && maxAbs !== 1) {
-            const scale = 1.0 / maxAbs;
-            for (let i = 0; i < samples.length; i++) {
-              samples[i] *= scale;
-            }
-            logger.info('VoiceRecorder', 'Audio normalized', { maxAbs: maxAbs.toFixed(4), scale: scale.toFixed(4) });
-          }
-
-          // F7-P0: 静音裁剪（阈值 0.01，去除首尾静音段）
-          const SILENCE_THRESHOLD = 0.01;
-          let trimStart = 0;
-          let trimEnd = samples.length - 1;
-          while (trimStart < samples.length && Math.abs(samples[trimStart]) < SILENCE_THRESHOLD) trimStart++;
-          while (trimEnd > trimStart && Math.abs(samples[trimEnd]) < SILENCE_THRESHOLD) trimEnd--;
-          // 用 trimmed 替代原始 samples（Float32Array 固定长度，必须新建）
-          const audioSamples = (trimStart > 0 || trimEnd < samples.length - 1)
-            ? samples.slice(trimStart, trimEnd + 1)
-            : samples;
-          if (trimStart > 0 || trimEnd < samples.length - 1) {
-            logger.info('VoiceRecorder', 'Silence trimmed', { removedStart: trimStart, removedEnd: samples.length - 1 - trimEnd, remaining: audioSamples.length });
-          }
-
-          // F7-P1: STT 流式转写（chunk size 4800 = 300ms @ 16kHz）
-          const CHUNK = 4800;
-          const MAX_RETRIES = 1;
-
-          let fullText = '';
-          for (let retry = 0; retry <= MAX_RETRIES; retry++) {
-            try {
-              const stream: SttStream = await sttRef.current.createStream();
-
-              for (let i = 0; i < audioSamples.length; i += CHUNK) {
-                const chunk = audioSamples.slice(i, i + CHUNK);
-                await stream.acceptWaveform(chunk, sampleRate);
-                while (await stream.isReady()) {
-                  await stream.decode();
-                }
-                const partial = await stream.getResult();
-                if (partial.text) {
-                  fullText = partial.text;
-                }
-              }
-
-              // 输入结束，刷新剩余
-              await stream.inputFinished();
-              while (await stream.isReady()) {
-                await stream.decode();
-              }
-              const finalResult = await stream.getResult();
-              if (finalResult.text) fullText = finalResult.text;
-              await stream.release();
-
-              if (fullText) break; // 成功则跳出重试循环
-
-              // F7-P2: 空结果重试
-              if (retry < MAX_RETRIES) {
-                logger.warn('VoiceRecorder', 'STT returned empty, retrying', { attempt: retry + 1 });
-              }
-            } catch (streamErr: any) {
-              logger.error('VoiceRecorder', 'STT stream error', { error: streamErr?.message, attempt: retry + 1 });
-              try { await stream.release(); } catch (_) {}
-              if (retry >= MAX_RETRIES) throw streamErr;
-            }
-          }
+          // v0.1.95: 使用 Offline Paraformer 直接转写 WAV 文件
+          // Paraformer 模型内部处理音频解码，无需手动分 chunk
+          logger.info('VoiceRecorder', 'Starting Paraformer STT transcription', { wavPath });
+          const result = await sttRef.current.transcribeFile(wavPath);
+          const fullText = result.text || '';
 
           logger.info('VoiceRecorder', 'STT result', { textLength: fullText.length, textPreview: fullText.substring(0, 200) });
 
@@ -317,11 +255,11 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
           }
         } catch (sttErr: any) {
           logger.error('VoiceRecorder', 'STT transcribe error', { error: sttErr?.message || String(sttErr) });
+        } finally {
+          // 清理临时 WAV 文件
+          try { await FileSystem.deleteAsync(wavPath, { idempotent: true }); } catch {}
         }
       }
-
-      // 清理临时 WAV 文件
-      try { await FileSystem.deleteAsync(wavPath, { idempotent: true }); } catch {}
 
       // 如果STT失败，返回空转写
       setStatus('idle');
