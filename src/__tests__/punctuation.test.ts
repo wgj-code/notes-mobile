@@ -32,6 +32,22 @@ describe('deduplicateSttText', () => {
   it('无重复字的文本不变', () => {
     expect(deduplicateSttText('自动生成笔记')).toBe('自动生成笔记');
   });
+
+  it('AABB词+重复字混合', () => {
+    expect(deduplicateSttText('高高兴兴本本轮轮')).toBe('高高兴兴本轮');
+  });
+
+  it('纯英文数字标点不受影响', () => {
+    expect(deduplicateSttText('hello 123 !@#')).toBe('hello 123 !@#');
+  });
+
+  it('null输入返回null', () => {
+    expect(deduplicateSttText(null as any)).toBe(null);
+  });
+
+  it('undefined输入返回undefined', () => {
+    expect(deduplicateSttText(undefined as any)).toBe(undefined);
+  });
 });
 
 describe('punctuation', () => {
