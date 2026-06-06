@@ -11,6 +11,7 @@ import SherpaOnnx from 'react-native-sherpa-onnx/src/NativeSherpaOnnx';
 import { identifyScene, type SceneType } from '../lib/scene-detector';
 import { addPunctuation, deduplicateSttText } from '../lib/punctuation';
 import { logger } from '../lib/logger';
+import { WakeLock } from '../lib/wakeLock';
 
 export type RecordingStatus = 'idle' | 'initializing' | 'recording' | 'paused' | 'stopping' | 'transcribing' | 'error';
 
@@ -110,10 +111,11 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         throw new Error('Audio permission not granted');
       }
 
-      // 配置音频模式
+      // 配置音频模式（staysActiveInBackground 允许后台录音）
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
       });
 
       // 创建录音
@@ -128,6 +130,8 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       recordingRef.current = recording;
       setStatus('recording');
       startTimer();
+      // PARTIAL_WAKE_LOCK 防止灭屏后 CPU 休眠导致录音中断
+      WakeLock.acquire();
     } catch (err: any) {
       console.error('Start recording error:', err);
       logger.error('VoiceRecorder', 'Start recording failed', { error: err?.message || String(err) });
@@ -161,6 +165,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     try {
       setStatus('stopping');
       stopTimer();
+      WakeLock.release();
 
       // 录音时长太短则跳过转写
       const elapsed = durationRef.current;
@@ -290,6 +295,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   useEffect(() => {
     return () => {
       stopTimer();
+      WakeLock.release();
       if (recordingRef.current) {
         recordingRef.current.stopAndUnloadAsync().catch(() => {});
       }

@@ -31,11 +31,21 @@ if [ -d "$MODEL_SRC" ] && [ ! -d "$MODEL_DST" ]; then
   echo "  Copied TTS model ($(du -sh "$MODEL_DST" | cut -f1))"
 fi
 
-# Copy STT model to Android assets (v0.1.95: Paraformer offline model)
+# Copy STT model to Android assets (v0.1.97: Paraformer offline model)
+# 始终同步，不依赖缓存（防止旧模型残留）
 STT_SRC="$PROJECT_DIR/assets/models/sherpa-onnx-paraformer-zh-2024-03-09"
 STT_DST="$PROJECT_DIR/android/app/src/main/assets/models/sherpa-onnx-paraformer-zh-2024-03-09"
-if [ -d "$STT_SRC" ] && [ ! -d "$STT_DST" ]; then
+if [ -d "$STT_SRC" ]; then
   mkdir -p "$PROJECT_DIR/android/app/src/main/assets/models"
+  # 清理旧模型目录（如果存在）
+  for old_dir in "$PROJECT_DIR/android/app/src/main/assets/models/sherpa-onnx-streaming"*; do
+    if [ -d "$old_dir" ]; then
+      rm -rf "$old_dir"
+      echo "  Removed old STT model: $(basename "$old_dir")"
+    fi
+  done
+  # 始终同步新模型
+  rm -rf "$STT_DST"
   cp -r "$STT_SRC" "$STT_DST"
   echo "  Copied Paraformer STT model ($(du -sh "$STT_DST" | cut -f1))"
 fi
@@ -68,7 +78,29 @@ echo "=== [4/4] Verifying APK ==="
 APK="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
 if [ -f "$APK" ]; then
   SIZE=$(du -h "$APK" | cut -f1)
+  SIZE_BYTES=$(stat -c%s "$APK")
   echo "APK: $APK ($SIZE)"
+
+  # v0.1.97+: APK 内容校验 — 确认模型文件正确包含
+  echo "=== APK 内容校验 ==="
+  STT_MODEL_IN_APK=$(unzip -l "$APK" 2>/dev/null | grep "paraformer.*model.*\.onnx" | wc -l)
+  OLD_MODEL_IN_APK=$(unzip -l "$APK" 2>/dev/null | grep "streaming-zipformer" | wc -l)
+  if [ "$STT_MODEL_IN_APK" -eq 0 ]; then
+    echo "  ❌ FAIL: Paraformer 模型未包含在 APK 中！"
+    exit 1
+  fi
+  if [ "$OLD_MODEL_IN_APK" -gt 0 ]; then
+    echo "  ❌ FAIL: 旧 Streaming Zipformer 模型仍残留在 APK 中！"
+    exit 1
+  fi
+  echo "  ✅ Paraformer 模型已包含"
+
+  # APK 大小校验：不允许超过 700MB
+  if [ "$SIZE_BYTES" -gt 734003200 ]; then
+    echo "  ❌ FAIL: APK 大小 $(numfmt --to=iec $SIZE_BYTES) 超过 700MB 限制！"
+    exit 1
+  fi
+  echo "  ✅ APK 大小合理 ($SIZE)"
 
   AAPT="$ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | tail -1)/aapt"
   if [ -f "$AAPT" ]; then
