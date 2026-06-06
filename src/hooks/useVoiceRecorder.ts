@@ -8,7 +8,7 @@ import { createStreamingSTT, type StreamingSttEngine, type SttStream } from 'rea
 import { assetModelPath } from 'react-native-sherpa-onnx';
 import SherpaOnnx from 'react-native-sherpa-onnx/src/NativeSherpaOnnx';
 import { identifyScene, type SceneType } from '../lib/scene-detector';
-import { addPunctuation } from '../lib/punctuation';
+import { addPunctuation, deduplicateSttText } from '../lib/punctuation';
 import { logger } from '../lib/logger';
 
 export type RecordingStatus = 'idle' | 'initializing' | 'recording' | 'paused' | 'stopping' | 'transcribing' | 'error';
@@ -289,8 +289,10 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
           logger.info('VoiceRecorder', 'STT result', { textLength: fullText.length, textPreview: fullText.substring(0, 200) });
 
           if (fullText) {
+            // 去重后处理（去除 STT 连续重复字）
+            const dedupedText = deduplicateSttText(fullText);
             // 标点后处理
-            const textWithPunctuation = addPunctuation(fullText);
+            const textWithPunctuation = addPunctuation(dedupedText);
             logger.info('VoiceRecorder', 'Punctuation added', { original: fullText.length, processed: textWithPunctuation.length });
 
             const segment: TranscriptSegment = {

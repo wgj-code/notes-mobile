@@ -1,5 +1,51 @@
-// STT 标点后处理模块
-// 基于规则引擎：语音停顿 + 语义分析
+// STT 后处理模块
+// 去重 + 标点（基于规则引擎）
+
+/**
+ * 去除 STT 识别中的连续重复字
+ * 处理 streaming 模型常见的重复输出，如 "本本轮轮" → "本轮"、"鑫鑫鑫鑫" → "鑫"
+ * 匹配 2+ 连续相同汉字，缩减为 1 个
+ * 保留常见 AABB 自然重叠词
+ * @param text STT 识别的原始文本
+ * @returns 去重后的文本
+ */
+export function deduplicateSttText(text: string): string {
+  if (!text || text.trim().length === 0) return text;
+
+  // 先保护 AABB 自然重叠词（高高兴兴、开开心心等）
+  // 临时替换为占位符，去重后还原
+  const AABB_WORDS = [
+    '高高兴兴', '开开心心', '快快乐乐', '漂漂亮亮', '干干净净',
+    '整整齐齐', '明明白白', '清清楚楚', '认认真真', '仔仔细细',
+    '平平安安', '健健康康', '热热闹闹', '欢欢喜喜', '和和美美',
+    '甜甜蜜蜜', '幸幸福福', '踏踏实实', '稳稳当当', '妥妥当当',
+    '大大方方', '客客气气', '亲亲切切', '热热乎乎', '暖暖和和',
+    '严严实实', '密密麻麻', '方方面面', '方方面面', '陆陆续续',
+    '断断续续', '形形色色', '林林总总', '方方面面', '日日夜夜',
+    '朝朝暮暮', '生生世世', '世世代代', '子子孙孙', '风风雨雨',
+  ];
+
+  const placeholders: Array<[string, string]> = [];
+  let result = text;
+
+  AABB_WORDS.forEach((word, i) => {
+    if (result.includes(word)) {
+      const ph = `\x00AABB${i}\x00`;
+      placeholders.push([ph, word]);
+      result = result.replace(new RegExp(word, 'g'), ph);
+    }
+  });
+
+  // 去重：2+ 连续相同汉字 → 1 个
+  result = result.replace(/([一-龥])\1+/g, '$1');
+
+  // 还原 AABB 词
+  placeholders.forEach(([ph, word]) => {
+    result = result.replace(new RegExp(ph.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), word);
+  });
+
+  return result;
+}
 
 /**
  * 为 STT 识别文本添加标点符号
@@ -28,23 +74,24 @@ export function addPunctuation(
 function addPunctuationByRules(text: string): string {
   let result = text;
 
-  // 1. 句末语气词后添加句号
+  // 1. 列举项后添加逗号（如：第一、第二、第三）- 优先处理
+  result = result.replace(/(第[一二三四五六七八九十百千万]+)(?=[一-龥])/g, '$1，');
+
+  // 2. 句末语气词后添加句号
   const sentenceEnders = ['的', '了', '呢', '吧', '啊', '哦', '嗯', '哈', '呀'];
   for (const ender of sentenceEnders) {
     // 匹配：语气词 + 后面是中文字符或字符串结尾
-    const regex = new RegExp(`(${ender})(?=[\\u4e00-\\u9fa5]|$)`, 'g');
+    const regex = new RegExp(`(${ender})(?=[一-龥]|$)`, 'g');
     result = result.replace(regex, `$1。`);
   }
 
-  // 2. 疑问词后添加问号
-  const questionWords = ['吗', '呢', '什么', '怎么', '为什么', '哪里', '谁', '几'];
-  for (const word of questionWords) {
+  // 3. 疑问词后添加问号（在句号之前处理）
+  // 注意：吗、什么、怎么等疑问词本身不加问号，而是在句子末尾加
+  const questionEnders = ['吗', '呢'];
+  for (const word of questionEnders) {
     const regex = new RegExp(`(${word})(?=[\\u4e00-\\u9fa5]|$)`, 'g');
     result = result.replace(regex, `$1？`);
   }
-
-  // 3. 列举项后添加逗号（如：第一、第二、第三）
-  result = result.replace(/(第[一二三四五六七八九十百千万]+)(?=[\\u4e00-\\u9fa5])/g, '$1，');
 
   // 4. 清理重复标点
   result = result.replace(/。，/g, '。');

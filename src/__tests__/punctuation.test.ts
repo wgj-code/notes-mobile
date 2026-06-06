@@ -1,4 +1,38 @@
-import { addPunctuation } from '../lib/punctuation';
+import { addPunctuation, deduplicateSttText } from '../lib/punctuation';
+
+describe('deduplicateSttText', () => {
+  it('去重 2 连续相同汉字', () => {
+    expect(deduplicateSttText('生生成')).toBe('生成');
+  });
+
+  it('去重 3 连续相同汉字', () => {
+    expect(deduplicateSttText('本本轮轮')).toBe('本轮');
+  });
+
+  it('去重 4 连续相同汉字', () => {
+    expect(deduplicateSttText('鑫鑫鑫鑫')).toBe('鑫');
+  });
+
+  it('保留高高兴兴（AABB不同字）', () => {
+    expect(deduplicateSttText('高高兴兴')).toBe('高高兴兴');
+  });
+
+  it('去重混合文本中的重复字', () => {
+    expect(deduplicateSttText('本本轮轮是在那那个上上一轮')).toBe('本轮是在那个上一轮');
+  });
+
+  it('去重长文本中的多处重复', () => {
+    expect(deduplicateSttText('鑫鑫鑫鑫开开会画')).toBe('鑫开会画');
+  });
+
+  it('空字符串返回空', () => {
+    expect(deduplicateSttText('')).toBe('');
+  });
+
+  it('无重复字的文本不变', () => {
+    expect(deduplicateSttText('自动生成笔记')).toBe('自动生成笔记');
+  });
+});
 
 describe('punctuation', () => {
   describe('addPunctuation', () => {
