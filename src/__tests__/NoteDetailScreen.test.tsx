@@ -87,7 +87,7 @@ describe('NoteDetailScreen', () => {
     );
   });
 
-  it('renders with note data', () => {
+  it('renders with note data in preview mode', () => {
     const note = {
       id: 'note-1',
       title: 'My Existing Note',
@@ -107,8 +107,10 @@ describe('NoteDetailScreen', () => {
       />
     );
 
-    expect(screen.getByDisplayValue('My Existing Note')).toBeTruthy();
-    expect(screen.getByDisplayValue('Some content here')).toBeTruthy();
+    // 已有笔记默认预览模式，标题显示为 Text（非 TextInput）
+    expect(screen.getByText('My Existing Note')).toBeTruthy();
+    // 预览模式下标题不是可编辑的 TextInput
+    expect(screen.queryByDisplayValue('My Existing Note')).toBeNull();
     expect(mockSetOptions).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Edit Note' })
     );
@@ -117,21 +119,10 @@ describe('NoteDetailScreen', () => {
   it('calls updateNote on save with valid title', () => {
     mockUpdateNote.mockResolvedValueOnce(undefined);
 
-    const note = {
-      id: 'note-1',
-      title: 'Original Title',
-      content: 'Original content',
-      user_id: 'u1',
-      folder_id: null,
-      tags: [],
-      created_at: '2026-01-01T00:00:00Z',
-      updated_at: '2026-01-01T00:00:00Z',
-      deleted_at: null,
-    };
-
+    // 新建笔记（无 noteId）默认编辑模式，可直接编辑标题
     render(
       <NoteDetailScreen
-        route={{ params: { noteId: 'note-1', note } }}
+        route={{ params: { noteId: null, note: undefined, templateTitle: 'Original Title', templateContent: 'Original content' } }}
         navigation={mockNavigation}
       />
     );

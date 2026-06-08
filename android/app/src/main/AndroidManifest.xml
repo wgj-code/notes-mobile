@@ -7,6 +7,9 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
@@ -32,5 +35,9 @@
         <data android:scheme="com.wgjcode.notes"/>
       </intent-filter>
     </activity>
+    <service
+      android:name=".RecordingService"
+      android:foregroundServiceType="microphone"
+      android:exported="false"/>
   </application>
 </manifest>

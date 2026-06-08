@@ -42,7 +42,7 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   const [tags, setTags] = useState<string[]>(resolvedNote?.tags ?? []);
   const [tagInput, setTagInput] = useState('');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
-  const [viewMode, setViewMode] = useState<ViewMode>('edit');
+  const [viewMode, setViewMode] = useState<ViewMode>(isEditing ? 'preview' : 'edit');
   const [showFolderPicker, setShowFolderPicker] = useState(false);
   const [lastSavedContent, setLastSavedContent] = useState(resolvedNote?.content ?? templateContent ?? '');
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -256,54 +256,73 @@ export default function NoteDetailScreen({ route, navigation }: any) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Title input */}
-      <TextInput
-        testID="note-title-input"
-        style={styles.titleInput}
-        placeholder={t('notes.title')}
-        value={title}
-        onChangeText={setTitle}
-        maxLength={200}
-      />
-
-      {/* Folder selector */}
-      <TouchableOpacity
-        style={styles.folderSelector}
-        onPress={() => {
-          fetchFolders();
-          setShowFolderPicker(true);
-        }}
-      >
-        <Text style={styles.folderSelectorText}>
-          {selectedFolder ? selectedFolder.name : t('notes.selectFolder')}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Tags */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsContainer}>
-        {tags.map((tag) => (
-          <TouchableOpacity
-            key={tag}
-            style={styles.tagChip}
-            onPress={() => handleRemoveTag(tag)}
-          >
-            <Text style={styles.tagChipText}>#{tag} x</Text>
-          </TouchableOpacity>
-        ))}
+      {/* Title input / preview */}
+      {viewMode === 'edit' ? (
         <TextInput
-          style={styles.tagInput}
-          placeholder={t('notes.addTag')}
-          value={tagInput}
-          onChangeText={setTagInput}
-          onSubmitEditing={handleAddTag}
-          returnKeyType="done"
+          testID="note-title-input"
+          style={styles.titleInput}
+          placeholder={t('notes.title')}
+          value={title}
+          onChangeText={setTitle}
+          maxLength={200}
         />
-      </ScrollView>
+      ) : (
+        <Text style={styles.titlePreview}>{title || t('notes.title')}</Text>
+      )}
 
-      {/* Image upload */}
-      <View style={styles.imageUploadRow}>
-        <ImageUpload onImageUploaded={handleImageUploaded} />
-      </View>
+      {/* Folder selector - edit mode only */}
+      {viewMode === 'edit' && (
+        <TouchableOpacity
+          style={styles.folderSelector}
+          onPress={() => {
+            fetchFolders();
+            setShowFolderPicker(true);
+          }}
+        >
+          <Text style={styles.folderSelectorText}>
+            {selectedFolder ? selectedFolder.name : t('notes.selectFolder')}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Tags - edit mode only */}
+      {viewMode === 'edit' && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsContainer}>
+          {tags.map((tag) => (
+            <TouchableOpacity
+              key={tag}
+              style={styles.tagChip}
+              onPress={() => handleRemoveTag(tag)}
+            >
+              <Text style={styles.tagChipText}>#{tag} x</Text>
+            </TouchableOpacity>
+          ))}
+          <TextInput
+            style={styles.tagInput}
+            placeholder={t('notes.addTag')}
+            value={tagInput}
+            onChangeText={setTagInput}
+            onSubmitEditing={handleAddTag}
+            returnKeyType="done"
+          />
+        </ScrollView>
+      )}
+
+      {/* Preview mode: show tags as read-only */}
+      {viewMode === 'preview' && tags.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsContainer}>
+          {tags.map((tag) => (
+            <Text key={tag} style={styles.tagChipText}>#{tag}</Text>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* Image upload - edit mode only */}
+      {viewMode === 'edit' && (
+        <View style={styles.imageUploadRow}>
+          <ImageUpload onImageUploaded={handleImageUploaded} />
+        </View>
+      )}
 
       {/* Content area: edit or preview */}
       {viewMode === 'edit' ? (
@@ -376,6 +395,13 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       fontWeight: '600',
       borderBottomWidth: 1,
       borderBottomColor: c.border,
+      paddingBottom: spacing.sm,
+      marginBottom: spacing.md,
+      color: c.text,
+    },
+    titlePreview: {
+      fontSize: fontSize.xxl,
+      fontWeight: '600',
       paddingBottom: spacing.sm,
       marginBottom: spacing.md,
       color: c.text,

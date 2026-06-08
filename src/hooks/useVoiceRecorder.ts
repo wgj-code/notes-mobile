@@ -3,6 +3,7 @@
 // v0.1.95: 切换到 Offline Paraformer 模型，提升中文识别准确率
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { createSTT, type SttEngine } from 'react-native-sherpa-onnx/stt';
@@ -12,8 +13,14 @@ import { identifyScene, type SceneType } from '../lib/scene-detector';
 import { addPunctuation, deduplicateSttText } from '../lib/punctuation';
 import { logger } from '../lib/logger';
 import { WakeLock } from '../lib/wakeLock';
+import { RecordingService } from '../lib/recordingService';
 
 export type RecordingStatus = 'idle' | 'initializing' | 'recording' | 'paused' | 'stopping' | 'transcribing' | 'error';
+
+// 模块级单例：录音状态不随组件卸载丢失，支持返回键后台录音
+let _recording: Audio.Recording | null = null;
+let _recordingStartTime = 0; // 录音开始的时间戳（ms），用于后台恢复计时
+let _serviceStarted = false;
 
 interface TranscriptSegment {
   text: string;
@@ -37,7 +44,7 @@ interface UseVoiceRecorderReturn {
 }
 
 export function useVoiceRecorder(): UseVoiceRecorderReturn {
-  const [status, setStatus] = useState<RecordingStatus>('idle');
+  const [status, setStatus] = useState<RecordingStatus>(_recording ? 'recording' : 'idle');
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
   const [currentText, setCurrentText] = useState('');
@@ -45,7 +52,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [sttReady, setSttReady] = useState(false);
   const [sttError, setSttError] = useState<string | null>(null);
 
-  const recordingRef = useRef<Audio.Recording | null>(null);
+  const recordingRef = useRef<Audio.Recording | null>(_recording);
   const sttRef = useRef<SttEngine | null>(null);
   const durationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const durationRef = useRef(0); // ref 跟踪真实时长，避免闭包陷阱
@@ -83,19 +90,51 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     };
   }, []);
 
-  // 计时器
-  const startTimer = useCallback(() => {
-    durationRef.current = 0;
-    durationTimerRef.current = setInterval(() => {
-      durationRef.current += 1;
-      setDuration(durationRef.current);
-    }, 1000);
+  // 计时器（基于时间戳，后台恢复时校正）
+  const syncDuration = useCallback(() => {
+    if (_recordingStartTime > 0) {
+      const elapsed = Math.floor((Date.now() - _recordingStartTime) / 1000);
+      durationRef.current = elapsed;
+      setDuration(elapsed);
+    }
   }, []);
+
+  const startTimer = useCallback(() => {
+    if (_recordingStartTime === 0) {
+      _recordingStartTime = Date.now();
+    }
+    syncDuration();
+    durationTimerRef.current = setInterval(syncDuration, 1000);
+  }, [syncDuration]);
 
   const stopTimer = useCallback(() => {
     if (durationTimerRef.current) {
       clearInterval(durationTimerRef.current);
       durationTimerRef.current = null;
+    }
+  }, []);
+
+  // AppState 监听：App 从后台回前台时校正计时器
+  useEffect(() => {
+    const handleAppState = (nextState: AppStateStatus) => {
+      if (nextState === 'active' && _recording) {
+        syncDuration();
+        // 重启 setInterval（后台期间 setInterval 被挂起）
+        if (durationTimerRef.current) {
+          clearInterval(durationTimerRef.current);
+        }
+        durationTimerRef.current = setInterval(syncDuration, 1000);
+      }
+    };
+    const sub = AppState.addEventListener('change', handleAppState);
+    return () => sub.remove();
+  }, [syncDuration]);
+
+  // 组件挂载时：如果录音在后台进行中，恢复状态
+  useEffect(() => {
+    if (_recording && _recordingStartTime > 0) {
+      syncDuration();
+      durationTimerRef.current = setInterval(syncDuration, 1000);
     }
   }, []);
 
@@ -128,9 +167,13 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       const uri = recording.getURI();
       logger.info('VoiceRecorder', 'Recording created', { uri });
       recordingRef.current = recording;
+      _recording = recording;
+      _recordingStartTime = Date.now();
       setStatus('recording');
       startTimer();
-      // PARTIAL_WAKE_LOCK 防止灭屏后 CPU 休眠导致录音中断
+      // 启动前台服务（通知栏常驻 + 进程保护）+ PARTIAL_WAKE_LOCK 防止灭屏后 CPU 休眠
+      RecordingService.start();
+      _serviceStarted = true;
       WakeLock.acquire();
     } catch (err: any) {
       console.error('Start recording error:', err);
@@ -165,7 +208,10 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     try {
       setStatus('stopping');
       stopTimer();
+      _recordingStartTime = 0;
+      _serviceStarted = false;
       WakeLock.release();
+      RecordingService.stop();
 
       // 录音时长太短则跳过转写
       const elapsed = durationRef.current;
@@ -175,6 +221,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         logger.warn('VoiceRecorder', 'Recording too short, skipping transcription');
         await recordingRef.current.stopAndUnloadAsync();
         recordingRef.current = null;
+        _recording = null;
         setStatus('idle');
         setDuration(0);
         durationRef.current = 0;
@@ -186,6 +233,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       const uri = recordingRef.current.getURI();
       logger.info('VoiceRecorder', 'Recording stopped', { uri });
       recordingRef.current = null;
+      _recording = null;
 
       // 检查录音文件是否存在且非空
       try {
@@ -286,19 +334,16 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     setStatus('idle');
     setDuration(0);
     durationRef.current = 0;
+    _recordingStartTime = 0;
     setTranscript([]);
     setCurrentText('');
     setSceneType('unknown');
   }, []);
 
-  // 清理
+  // 清理：组件卸载时只停计时器，不停止录音（录音在后台继续，通过通知栏停止）
   useEffect(() => {
     return () => {
       stopTimer();
-      WakeLock.release();
-      if (recordingRef.current) {
-        recordingRef.current.stopAndUnloadAsync().catch(() => {});
-      }
     };
   }, [stopTimer]);
 
