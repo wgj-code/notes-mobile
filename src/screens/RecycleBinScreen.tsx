@@ -27,7 +27,7 @@ export default function RecycleBinScreen({ navigation }: any) {
   }, []);
 
   const handleRestore = (note: Note) => {
-    Alert.alert(t('notes.restoreNote'), `${note.title}?`, [
+    Alert.alert(t('notes.restoreNote'), `${note.title || '无标题'}?`, [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('notes.restoreNote'),
@@ -44,7 +44,7 @@ export default function RecycleBinScreen({ navigation }: any) {
   };
 
   const handlePermanentDelete = (note: Note) => {
-    Alert.alert(t('notes.permanentDelete'), t('notes.confirmPermanentDelete', { title: note.title }), [
+    Alert.alert(t('notes.permanentDelete'), t('notes.confirmPermanentDelete', { title: note.title || '无标题' }), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.delete'),
@@ -64,7 +64,7 @@ export default function RecycleBinScreen({ navigation }: any) {
   const renderItem = ({ item }: { item: Note }) => (
     <View style={styles.item}>
       <View style={styles.itemInfo}>
-        <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
+        <Text style={styles.itemTitle} numberOfLines={1}>{item.title || '无标题'}</Text>
         <Text style={styles.itemDate} numberOfLines={1}>
           {item.deleted_at ? new Date(item.deleted_at).toLocaleDateString() : ''}
         </Text>

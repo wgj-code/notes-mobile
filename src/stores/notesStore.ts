@@ -139,9 +139,11 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
   createNote: async (title, content, folderId = null, tags = []) => {
     try {
+      // 空标题转换为"无标题"，绕过数据库NOT NULL约束
+      const noteTitle = title?.trim() || '无标题';
       const { data, error } = await supabase
         .from('notes')
-        .insert({ title, content, folder_id: folderId, tags })
+        .insert({ title: noteTitle, content, folder_id: folderId, tags })
         .select()
         .single();
       if (error) throw error;
@@ -152,7 +154,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       logger.warn('notesStore', 'createNote offline fallback', { title, error: String(err) });
       const localNote: Note & { is_dirty: number } = {
         id: crypto.randomUUID(),
-        title,
+        title: title?.trim() || '无标题',
         content,
         user_id: '',
         folder_id: folderId,
@@ -172,7 +174,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     const note = get().notes.find((n) => n.id === id);
     if (!note) return;
 
-    const updates: Record<string, any> = { title, content };
+    // 空标题转换为"无标题"，绕过数据库NOT NULL约束
+    const noteTitle = title?.trim() || '无标题';
+    const updates: Record<string, any> = { title: noteTitle, content };
     if (folderId !== undefined) updates.folder_id = folderId;
     if (tags !== undefined) updates.tags = tags;
 

@@ -56,11 +56,9 @@ export default function NoteDetailScreen({ route, navigation }: any) {
     }
 
     autoSaveTimerRef.current = setTimeout(async () => {
-      const trimmedTitle = title.trim();
-      if (!trimmedTitle) return;
       setSaveStatus('saving');
       try {
-        await updateNote(noteId, trimmedTitle, content, folderId, tags);
+        await updateNote(noteId, title.trim(), content, folderId, tags);
         setLastSavedContent(content);
         setSaveStatus('saved');
       } catch {
@@ -175,17 +173,12 @@ export default function NoteDetailScreen({ route, navigation }: any) {
   };
 
   const saveAndClose = async () => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      Alert.alert(t('common.error'), t('notes.titleEmpty'));
-      return;
-    }
     setSaveStatus('saving');
     try {
       if (isEditing) {
-        await updateNote(noteId, trimmedTitle, content, folderId, tags);
+        await updateNote(noteId, title.trim(), content, folderId, tags);
       } else {
-        await createNote(trimmedTitle, content, folderId, tags);
+        await createNote(title.trim(), content, folderId, tags);
       }
       navigation.goBack();
     } catch (error: any) {

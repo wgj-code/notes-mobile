@@ -24,8 +24,13 @@ SERVER_IP="8.133.196.220"
 APK_DST="notes-v${NEW_VERSION}.apk"
 
 echo "=== 上传 APK 到服务器 ==="
-scp -o StrictHostKeyChecking=no "$APK_SRC" "root@${SERVER_IP}:/opt/apk-releases/${APK_DST}"
-echo "✅ APK 已上传: http://${SERVER_IP}/apk/${APK_DST}"
+if scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$APK_SRC" "root@${SERVER_IP}:/opt/apk-releases/${APK_DST}"; then
+  echo "✅ APK 已上传: http://${SERVER_IP}/apk/${APK_DST}"
+else
+  echo "❌ APK 上传失败！请手动上传："
+  echo "   scp $APK_SRC root@${SERVER_IP}:/opt/apk-releases/${APK_DST}"
+  exit 1
+fi
 
 # 4. 更新服务端 version.json
 ssh -o StrictHostKeyChecking=no "root@${SERVER_IP}" "cat > /opt/apk-releases/version.json << EOF

@@ -54,7 +54,7 @@ function computeLayout(notes: Note[]): { nodes: GraphNode[]; edges: GraphEdge[] 
     const radius = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.3;
     return {
       id: note.id,
-      title: note.title,
+      title: note.title || '无标题',
       x: SCREEN_WIDTH / 2 + radius * Math.cos(angle) + (Math.random() - 0.5) * 40,
       y: SCREEN_HEIGHT / 2 + radius * Math.sin(angle) + (Math.random() - 0.5) * 40,
       links: extractWikiLinks(note.content),

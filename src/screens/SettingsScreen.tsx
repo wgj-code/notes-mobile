@@ -72,7 +72,7 @@ export default function SettingsScreen() {
     }
     try {
       const combined = notes
-        .map((note) => `# ${note.title}\n\n${note.content}`)
+        .map((note) => `# ${note.title || '无标题'}\n\n${note.content}`)
         .join('\n\n---\n\n');
       const filePath = `${FileSystem.cacheDirectory}notes-export.md`;
       await FileSystem.writeAsStringAsync(filePath, combined, {

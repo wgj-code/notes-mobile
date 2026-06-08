@@ -27,6 +27,19 @@ export function useVersionCheck() {
 
   const localVersion = Constants.expoConfig?.version || '0.0.0';
 
+  // 版本号比较函数（语义化版本比较）
+  const compareVersions = (v1: string, v2: string): number => {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const p1 = parts1[i] || 0;
+      const p2 = parts2[i] || 0;
+      if (p1 > p2) return 1;
+      if (p1 < p2) return -1;
+    }
+    return 0;
+  };
+
   // 自动检查 OTA 更新
   useEffect(() => {
     const autoCheckOTA = async () => {
@@ -56,8 +69,8 @@ export function useVersionCheck() {
       const resp = await fetch(VERSION_API);
       const version: VersionInfo = await resp.json();
 
-      const hasOTAUpdate = version.jsBundle > localVersion;
-      const hasAPKUpdate = version.apkVersion > localVersion;
+      const hasOTAUpdate = compareVersions(version.jsBundle, localVersion) > 0;
+      const hasAPKUpdate = compareVersions(version.apkVersion, localVersion) > 0;
 
       setResult({
         hasOTAUpdate,

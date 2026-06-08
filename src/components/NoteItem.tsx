@@ -20,7 +20,7 @@ export default function NoteItem({ note, onPress, onLongPress }: Props) {
       onLongPress={() => onLongPress?.(note)}
       style={styles.container}
     >
-      <Text style={styles.title} numberOfLines={1}>{note.title}</Text>
+      <Text style={styles.title} numberOfLines={1}>{note.title || '无标题'}</Text>
       <Text style={styles.preview} numberOfLines={2}>{note.content}</Text>
       <Text style={styles.date}>{new Date(note.updated_at).toLocaleDateString()}</Text>
     </TouchableOpacity>

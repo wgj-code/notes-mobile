@@ -67,7 +67,7 @@ export function useSpeech(notes: Note[]) {
     isPlayingRef.current = true;
 
     const note = notes[index];
-    const text = `${note.title}。${note.content}`;
+    const text = `${note.title || '无标题'}。${note.content}`;
     const currentVoice = voice;
     const currentRate = rate;
     const currentMode = mode;

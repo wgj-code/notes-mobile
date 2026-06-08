@@ -71,7 +71,7 @@ export default function NotesScreen({ navigation }: any) {
   };
 
   const handleLongPress = (note: Note) => {
-    Alert.alert(t('notes.deleteNote'), t('notes.confirmDelete', { title: note.title }), [
+    Alert.alert(t('notes.deleteNote'), t('notes.confirmDelete', { title: note.title || '无标题' }), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.delete'),
