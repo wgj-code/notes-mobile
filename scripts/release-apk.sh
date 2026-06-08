@@ -32,7 +32,15 @@ else
   exit 1
 fi
 
-# 4. 更新服务端 version.json
+# 4. 清理旧版本 APK（只保留最新）
+echo "=== 清理旧版本 APK ==="
+ssh -o StrictHostKeyChecking=no "root@${SERVER_IP}" "
+  cd /opt/apk-releases 2>/dev/null && \
+  ls notes-v*.apk 2>/dev/null | grep -v '${APK_DST}' | xargs -r rm -f && \
+  echo '✅ 旧版本 APK 已清理' || echo '⚠️ 无需清理'
+"
+
+# 5. 更新服务端 version.json
 ssh -o StrictHostKeyChecking=no "root@${SERVER_IP}" "cat > /opt/apk-releases/version.json << EOF
 {
   \"current\": \"${NEW_VERSION}\",
@@ -44,7 +52,7 @@ ssh -o StrictHostKeyChecking=no "root@${SERVER_IP}" "cat > /opt/apk-releases/ver
 EOF"
 echo "✅ 服务端 version.json 已更新"
 
-# 5. 验证
+# 6. 验证
 echo ""
 echo "=== 验证 ==="
 curl -s "http://${SERVER_IP}/api/version" | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'服务端版本: {d[\"current\"]} | APK: {d[\"apkUrl\"]}')"
