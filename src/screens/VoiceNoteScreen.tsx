@@ -20,6 +20,8 @@ import { t } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { useNotesStore } from '../stores/notesStore';
+import { AudioWaveform } from '../components/AudioWaveform';
+import { ProgressBar, type GeneratingStage } from '../components/ProgressBar';
 
 // R3: 指数退避重试上传
 async function uploadWithRetry(
@@ -85,6 +87,7 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
   const [manualScene, setManualScene] = useState<SceneType | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNote, setGeneratedNote] = useState<string | null>(null);
+  const [generatingStage, setGeneratingStage] = useState<GeneratingStage>('idle');
 
   const currentScene = manualScene || recorder.sceneType;
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -156,10 +159,12 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
   // 处理停止录音
   const handleStopRecording = useCallback(async () => {
     logger.info('VoiceNote', 'Stopping recording');
+    setGeneratingStage('stopping');
     const result = await recorder.stopRecording();
     logger.info('VoiceNote', 'Stop result', { hasResult: !!result });
     if (!result) {
       logger.error('VoiceNote', 'No result from stopRecording');
+      setGeneratingStage('idle');
       return;
     }
 
@@ -175,15 +180,18 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
       Alert.alert('提示', '语音转写内容为空，无法生成笔记。请检查 STT 模型是否正常加载，或重新录音。', [
         { text: '重置', onPress: () => recorder.reset() },
       ]);
+      setGeneratingStage('idle');
       return;
     }
 
     setIsGenerating(true);
+    setGeneratingStage('generating');
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         Alert.alert('错误', '请先登录');
+        setGeneratingStage('idle');
         return;
       }
 
@@ -207,6 +215,7 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
       if (insertError) {
         console.error('Insert error:', insertError);
         Alert.alert('错误', '保存失败');
+        setGeneratingStage('error');
         return;
       }
 
@@ -215,6 +224,7 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
 
       if (note) {
         setGeneratedNote(note);
+        setGeneratingStage('complete');
         // 固定标题格式：语音笔记-场景名
         const noteTitle = `语音笔记-${getSceneName(currentScene)}`;
         await createNote(noteTitle, note, null, ['voice', currentScene]);
@@ -226,10 +236,12 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
         Alert.alert('提示', '笔记生成失败，请重试', [
           { text: '继续录音', onPress: () => recorder.reset() },
         ]);
+        setGeneratingStage('error');
       }
     } catch (err: any) {
       logger.error('VoiceNote', 'Generate error', { error: err?.message || String(err) });
       Alert.alert('错误', '生成笔记失败，请重试');
+      setGeneratingStage('error');
     } finally {
       setIsGenerating(false);
       await logger.flush();
@@ -240,6 +252,12 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
   const handleScenePress = useCallback((type: SceneType) => {
     setManualScene(type === 'unknown' ? null : type);
   }, []);
+
+  // 重置时清空生成阶段
+  const handleReset = useCallback(() => {
+    setGeneratingStage('idle');
+    recorder.reset();
+  }, [recorder]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -263,6 +281,16 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
       <View style={styles.durationCard}>
         <Text style={styles.durationText}>{formatDuration(recorder.duration)}</Text>
       </View>
+
+      {/* 语音波形 */}
+      {status === 'recording' && (
+        <View style={styles.waveformCard}>
+          <AudioWaveform isActive={status === 'recording'} />
+        </View>
+      )}
+
+      {/* 生成进度条 */}
+      <ProgressBar stage={generatingStage} />
 
       {/* 场景选择 */}
       <View style={styles.sceneCard}>
@@ -356,7 +384,7 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
           </>
         )}
 
-        <TouchableOpacity style={styles.resetBtn} onPress={recorder.reset}>
+        <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
           <Text style={styles.resetBtnText}>重置</Text>
         </TouchableOpacity>
       </View>
@@ -399,6 +427,12 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       padding: spacing.xl,
       marginBottom: spacing.md,
       alignItems: 'center',
+    },
+    waveformCard: {
+      backgroundColor: c.card,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.md,
     },
     durationText: {
       fontSize: fontSize.xxxl,
@@ -446,7 +480,7 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       fontWeight: '600',
     },
     sceneHint: {
-      fontSize: fontSize.xs,
+      fontSize: fontSize.sm,
       color: c.textSecondary,
       marginTop: spacing.sm,
       textAlign: 'center',

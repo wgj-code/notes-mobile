@@ -2,7 +2,7 @@
   "expo": {
     "name": "迪迪笔记",
     "slug": "notes-mobile",
-    "version": "0.1.124",
+    "version": "0.1.126",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.jpg",
