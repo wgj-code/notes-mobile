@@ -250,7 +250,6 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
           {status === 'idle' && '准备就绪'}
           {status === 'initializing' && '正在初始化...'}
           {status === 'recording' && '录音中...'}
-          {status === 'paused' && '已暂停'}
           {status === 'stopping' && '正在停止...'}
           {status === 'transcribing' && '转写中...'}
           {status === 'error' && '发生错误'}
@@ -343,28 +342,6 @@ const VoiceNoteScreen = React.memo(function VoiceNoteScreen({ navigation }: Prop
 
         {status === 'recording' && (
           <>
-            <TouchableOpacity style={styles.pauseBtn} onPress={recorder.pauseRecording}>
-              <Text style={styles.pauseBtnText}>暂停</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.stopBtn}
-              onPress={handleStopRecording}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.stopBtnText}>停止并生成</Text>
-              )}
-            </TouchableOpacity>
-          </>
-        )}
-
-        {status === 'paused' && (
-          <>
-            <TouchableOpacity style={styles.resumeBtn} onPress={recorder.resumeRecording}>
-              <Text style={styles.resumeBtnText}>继续</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={styles.stopBtn}
               onPress={handleStopRecording}
@@ -538,28 +515,6 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       borderRadius: borderRadius.full,
     },
     recordBtnText: {
-      color: '#fff',
-      fontSize: fontSize.lg,
-      fontWeight: '600',
-    },
-    pauseBtn: {
-      backgroundColor: c.warning,
-      paddingHorizontal: spacing.xl,
-      paddingVertical: spacing.md,
-      borderRadius: borderRadius.full,
-    },
-    pauseBtnText: {
-      color: '#fff',
-      fontSize: fontSize.lg,
-      fontWeight: '600',
-    },
-    resumeBtn: {
-      backgroundColor: c.primary,
-      paddingHorizontal: spacing.xl,
-      paddingVertical: spacing.md,
-      borderRadius: borderRadius.full,
-    },
-    resumeBtnText: {
       color: '#fff',
       fontSize: fontSize.lg,
       fontWeight: '600',

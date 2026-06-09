@@ -15,12 +15,13 @@ import { logger } from '../lib/logger';
 import { WakeLock } from '../lib/wakeLock';
 import { RecordingService } from '../lib/recordingService';
 
-export type RecordingStatus = 'idle' | 'initializing' | 'recording' | 'paused' | 'stopping' | 'transcribing' | 'error';
+export type RecordingStatus = 'idle' | 'initializing' | 'recording' | 'stopping' | 'transcribing' | 'error';
 
 // 模块级单例：录音状态不随组件卸载丢失，支持返回键后台录音
-let _recording: Audio.Recording | null = null;
 let _recordingStartTime = 0; // 录音开始的时间戳（ms），用于后台恢复计时
 let _serviceStarted = false;
+let _recordingObject: Audio.Recording | null = null; // 录音对象（模块级持久化）
+let _recordingUri: string | null = null; // 录音文件 URI（模块级持久化）
 
 interface TranscriptSegment {
   text: string;
@@ -38,13 +39,11 @@ interface UseVoiceRecorderReturn {
   sttError: string | null;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<{ uri: string; transcript: string; sceneType: SceneType } | null>;
-  pauseRecording: () => Promise<void>;
-  resumeRecording: () => Promise<void>;
   reset: () => void;
 }
 
 export function useVoiceRecorder(): UseVoiceRecorderReturn {
-  const [status, setStatus] = useState<RecordingStatus>(_recording ? 'recording' : 'idle');
+  const [status, setStatus] = useState<RecordingStatus>('idle');
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptSegment[]>([]);
   const [currentText, setCurrentText] = useState('');
@@ -52,12 +51,12 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [sttReady, setSttReady] = useState(false);
   const [sttError, setSttError] = useState<string | null>(null);
 
-  const recordingRef = useRef<Audio.Recording | null>(_recording);
+  const recordingRef = useRef<boolean>(_recordingStartTime > 0);
   const sttRef = useRef<SttEngine | null>(null);
   const durationTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const durationRef = useRef(0); // ref 跟踪真实时长，避免闭包陷阱
+  const durationRef = useRef(0);
 
-  // 初始化STT引擎（offline Paraformer 模型——中文识别准确率更高）
+  // 初始化离线 STT 引擎（Paraformer 模型——中文识别准确率更高）
   useEffect(() => {
     (async () => {
       try {
@@ -65,8 +64,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         const modelPath = assetModelPath('models/sherpa-onnx-paraformer-zh-2024-03-09');
         logger.info('VoiceRecorder', 'STT model path', { modelPath: JSON.stringify(modelPath) });
 
-        // 让 SDK 自动检测模型类型（比手动指定更可靠）
-        // Boolean? / Double? 参数必须显式传值，否则 Native 层 null 会崩溃
+        // 使用离线 STT（不支持流式，但分块处理避免 OOM）
         sttRef.current = await createSTT({
           modelPath,
           preferInt8: true,
@@ -117,7 +115,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   // AppState 监听：App 从后台回前台时校正计时器
   useEffect(() => {
     const handleAppState = (nextState: AppStateStatus) => {
-      if (nextState === 'active' && _recording) {
+      if (nextState === 'active' && recordingRef.current) {
         syncDuration();
         // 重启 setInterval（后台期间 setInterval 被挂起）
         if (durationTimerRef.current) {
@@ -132,7 +130,14 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
   // 组件挂载时：如果录音在后台进行中，恢复状态
   useEffect(() => {
-    if (_recording && _recordingStartTime > 0) {
+    logger.info('VoiceRecorder', 'Component mounted', {
+      recordingStartTime: _recordingStartTime,
+      isRecording: _recordingStartTime > 0,
+    });
+    if (_recordingStartTime > 0) {
+      // 同步录音状态
+      recordingRef.current = true;
+      setStatus('recording');
       syncDuration();
       durationTimerRef.current = setInterval(syncDuration, 1000);
     }
@@ -141,6 +146,12 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   // 开始录音
   const startRecording = useCallback(async () => {
     try {
+      // 安全检查：释放残留的录音对象
+      if (_recordingObject) {
+        try { await _recordingObject.stopAndUnloadAsync(); } catch {}
+        _recordingObject = null;
+      }
+
       setStatus('initializing');
 
       // 请求权限
@@ -166,12 +177,14 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
       const uri = recording.getURI();
       logger.info('VoiceRecorder', 'Recording created', { uri });
-      recordingRef.current = recording;
-      _recording = recording;
+      recordingRef.current = true;
+      _recordingObject = recording;
+      _recordingUri = uri;
       _recordingStartTime = Date.now();
       setStatus('recording');
       startTimer();
-      // 启动前台服务（通知栏常驻 + 进程保护）+ PARTIAL_WAKE_LOCK 防止灭屏后 CPU 休眠
+      // 先请求通知权限，再启动前台服务
+      await RecordingService.requestNotificationPermission();
       RecordingService.start();
       _serviceStarted = true;
       WakeLock.acquire();
@@ -183,23 +196,6 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     }
   }, [startTimer]);
 
-  // 暂停录音
-  const pauseRecording = useCallback(async () => {
-    if (recordingRef.current && status === 'recording') {
-      await recordingRef.current.pauseAsync();
-      setStatus('paused');
-      stopTimer();
-    }
-  }, [status, stopTimer]);
-
-  // 恢复录音
-  const resumeRecording = useCallback(async () => {
-    if (recordingRef.current && status === 'paused') {
-      await recordingRef.current.startAsync();
-      setStatus('recording');
-      startTimer();
-    }
-  }, [status, startTimer]);
 
   // 停止录音并转写
   const stopRecording = useCallback(async () => {
@@ -213,15 +209,13 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       WakeLock.release();
       RecordingService.stop();
 
-      // 录音时长太短则跳过转写
       const elapsed = durationRef.current;
       logger.info('VoiceRecorder', 'Stopping recording', { duration: elapsed });
 
+      // 录音时长太短则跳过转写
       if (elapsed < 1) {
         logger.warn('VoiceRecorder', 'Recording too short, skipping transcription');
-        await recordingRef.current.stopAndUnloadAsync();
-        recordingRef.current = null;
-        _recording = null;
+        recordingRef.current = false;
         setStatus('idle');
         setDuration(0);
         durationRef.current = 0;
@@ -229,29 +223,48 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       }
 
       // 停止录音
-      await recordingRef.current.stopAndUnloadAsync();
-      const uri = recordingRef.current.getURI();
+      if (_recordingObject) {
+        await _recordingObject.stopAndUnloadAsync();
+        _recordingObject = null;
+      }
+      recordingRef.current = false;
+      const uri = _recordingUri;
       logger.info('VoiceRecorder', 'Recording stopped', { uri });
-      recordingRef.current = null;
-      _recording = null;
 
       // 检查录音文件是否存在且非空
-      try {
-        const fileInfo = await FileSystem.getInfoAsync(uri);
-        logger.info('VoiceRecorder', 'Recording file info', { exists: fileInfo.exists, size: fileInfo.exists ? (fileInfo as any).size : 0 });
-        if (!fileInfo.exists || (fileInfo as any).size === 0) {
-          logger.error('VoiceRecorder', 'Recording file is empty or missing', { uri });
-          setStatus('idle');
-          setDuration(0);
-          return { uri, transcript: '', sceneType: 'unknown' as SceneType };
+      if (uri) {
+        try {
+          const fileInfo = await FileSystem.getInfoAsync(uri);
+          logger.info('VoiceRecorder', 'Recording file info', { exists: fileInfo.exists, size: fileInfo.exists ? (fileInfo as any).size : 0 });
+          if (!fileInfo.exists || (fileInfo as any).size === 0) {
+            logger.error('VoiceRecorder', 'Recording file is empty or missing', { uri });
+            setStatus('idle');
+            setDuration(0);
+            return { uri, transcript: '', sceneType: 'unknown' as SceneType };
+          }
+        } catch (fsErr: any) {
+          logger.warn('VoiceRecorder', 'Could not check file info', { error: fsErr?.message });
         }
-      } catch (fsErr: any) {
-        logger.warn('VoiceRecorder', 'Could not check file info', { error: fsErr?.message });
       }
 
       // 离线转写
+      // 等待 STT 引擎就绪（最多 30 秒）
+      if (!sttRef.current && uri) {
+        logger.info('VoiceRecorder', 'Waiting for STT engine...');
+        const waitStart = Date.now();
+        while (!sttRef.current && Date.now() - waitStart < 30000) {
+          await new Promise(r => setTimeout(r, 200));
+        }
+        if (!sttRef.current) {
+          logger.error('VoiceRecorder', 'STT engine not ready after 30s');
+          setStatus('idle');
+          setDuration(0);
+          durationRef.current = 0;
+          return { uri, transcript: '', sceneType: 'unknown' as SceneType };
+        }
+      }
+
       if (sttRef.current && uri) {
-        // sherpa-onnx 需要纯路径，去掉 file:// 前缀
         const filePath = uri.replace(/^file:\/\//, '');
         setStatus('transcribing');
         logger.info('VoiceRecorder', 'Starting STT transcription', { uri, filePath });
@@ -272,19 +285,24 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
         try {
           // v0.1.95: 使用 Offline Paraformer 直接转写 WAV 文件
-          // Paraformer 模型内部处理音频解码，无需手动分 chunk
           logger.info('VoiceRecorder', 'Starting Paraformer STT transcription', { wavPath });
           const result = await sttRef.current.transcribeFile(wavPath);
           const fullText = result.text || '';
 
-          logger.info('VoiceRecorder', 'STT result', { textLength: fullText.length, textPreview: fullText.substring(0, 200) });
+          logger.info('VoiceRecorder', 'STT result', {
+            textLength: fullText.length,
+            textPreview: fullText.substring(0, 200),
+          });
 
           if (fullText) {
             // 去重后处理（去除 STT 连续重复字）
             const dedupedText = deduplicateSttText(fullText);
             // 标点后处理
             const textWithPunctuation = addPunctuation(dedupedText);
-            logger.info('VoiceRecorder', 'Punctuation added', { original: fullText.length, processed: textWithPunctuation.length });
+            logger.info('VoiceRecorder', 'Punctuation added', {
+              original: fullText.length,
+              processed: textWithPunctuation.length,
+            });
 
             const segment: TranscriptSegment = {
               text: textWithPunctuation,
@@ -299,6 +317,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
             setStatus('idle');
             setDuration(0);
+            durationRef.current = 0;
 
             return {
               uri,
@@ -324,21 +343,35 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       };
     } catch (err: any) {
       console.error('Stop recording error:', err);
+      logger.error('VoiceRecorder', 'Stop recording failed', { error: err?.message || String(err) });
       setStatus('error');
       return null;
     }
   }, [stopTimer]);
 
   // 重置
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
+    // 停止录音（如果正在进行）
+    if (_recordingObject) {
+      try {
+        await _recordingObject.stopAndUnloadAsync();
+      } catch {}
+      _recordingObject = null;
+    }
+    _recordingUri = null;
+    recordingRef.current = false;
     setStatus('idle');
     setDuration(0);
     durationRef.current = 0;
     _recordingStartTime = 0;
+    _serviceStarted = false;
+    WakeLock.release();
+    RecordingService.stop();
+    stopTimer();
     setTranscript([]);
     setCurrentText('');
     setSceneType('unknown');
-  }, []);
+  }, [stopTimer]);
 
   // 清理：组件卸载时只停计时器，不停止录音（录音在后台继续，通过通知栏停止）
   useEffect(() => {
@@ -357,8 +390,6 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     sttError,
     startRecording,
     stopRecording,
-    pauseRecording,
-    resumeRecording,
     reset,
   };
 }

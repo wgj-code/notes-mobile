@@ -16,10 +16,14 @@ const SCENE_KEYWORDS: SceneKeywords = {
     '各位', '大家', '会议', '讨论', '汇报', '总结', '计划', '项目',
     '负责人', '分工', 'deadline', '排期', '里程碑', '进度',
     // 会议角色
-    '经理', '总监', '主管', '组长', '同事',
+    '经理', '总监', '主管', '组长', '同事', '领导',
     // 会议动作
     '请说', '接下来', '下面', '首先', '其次', '最后',
     '同意', '反对', '建议', '意见', '决议',
+    // 工作沟通
+    '报告', '方案', '客户', '催', '抓紧', '交', '完成',
+    '周会', '例会', '站会', '复盘', '评审',
+    '需求', '排期', '上线', '发布', '版本',
   ],
   chat: [
     // 闲聊常用词
@@ -29,6 +33,13 @@ const SCENE_KEYWORDS: SceneKeywords = {
     // 口语化表达
     '哎', '嗯', '哦', '啊', '呀', '呢', '吧',
     '卧槽', '牛逼', '厉害', '绝了', '离谱',
+    // 日常对话
+    '师傅', '谢谢', '不客气', '慢走', '好的',
+    '怎么样', '还好', '还行', '不错', '挺好',
+    '老公', '老婆', '孩子', '作业', '做饭',
+    '喂', '你好', '您好', '请问',
+    // 打电话
+    '张总', '李总', '王总', '小李', '小王', '小张',
   ],
   monologue: [
     // 思考性词汇
@@ -38,6 +49,10 @@ const SCENE_KEYWORDS: SceneKeywords = {
     '问题', '解决方案', '思路', '想法',
     // 自言自语标记
     '对了', '等等', '还有', '话说',
+    // 规划类
+    '明天', '今天', '晚上', '上午', '下午',
+    '先', '然后', '接下来', '最后',
+    '唉', '事情', '真多', '先要', '先把',
   ],
 };
 
@@ -86,9 +101,21 @@ function detectMultiSpeaker(text: string): boolean {
   return speakerMarkers.some((marker) => marker.test(text));
 }
 
+// 检测对话结构（问句+答句模式）
+function detectDialoguePattern(text: string): boolean {
+  // 问句标记
+  const questionMarkers = /[？?]/;
+  // 答句标记
+  const answerMarkers = /好的|行|可以|没问题|知道了|哦|嗯|对/;
+  // 交替出现
+  const hasQuestion = questionMarkers.test(text);
+  const hasAnswer = answerMarkers.test(text);
+  return hasQuestion && hasAnswer;
+}
+
 // 主场景识别函数
 export function identifyScene(text: string): SceneType {
-  if (!text || text.trim().length < 10) {
+  if (!text || text.trim().length < 5) {
     return 'unknown';
   }
 
@@ -113,13 +140,19 @@ export function identifyScene(text: string): SceneType {
 
   scores.sort((a, b) => b.score - a.score);
 
+  // 对话结构检测加分（问句+答句模式）
+  const hasDialogue = detectDialoguePattern(text);
+  if (hasDialogue && scores[0].type === 'chat') {
+    scores[0].score += 2;
+  }
+
   // 如果最高分太低，返回unknown
-  if (scores[0].score < 2) {
+  if (scores[0].score < 1) {
     return 'unknown';
   }
 
   // 如果最高分和次高分差距不大，返回unknown（置信度不够）
-  if (scores[0].score - scores[1].score < 1.5) {
+  if (scores[0].score - scores[1].score < 0.8) {
     return 'unknown';
   }
 

@@ -23,12 +23,13 @@ class RecordingServiceModule(reactContext: ReactApplicationContext) : ReactConte
                     activity, Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
+                // 请求权限，但不阻塞启动 Service
+                // Service 可以在没有通知权限的情况下运行，只是不显示通知
                 ActivityCompat.requestPermissions(
                     activity,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                     1001
                 )
-                // 不阻塞，先启动 Service（即使没权限 Service 也能运行，只是不显示通知）
             }
         }
         RecordingService.startService(reactApplicationContext)

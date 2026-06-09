@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import androidx.core.app.TaskStackBuilder
 
 class RecordingService : Service() {
 
@@ -106,13 +107,14 @@ class RecordingService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        // 点击通知回到 App
-        val pendingIntent = packageManager.getLaunchIntentForPackage(packageName)?.let {
-            PendingIntent.getActivity(
-                this, 0, it,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        }
+        // 使用 TaskStackBuilder 构建正确的回退栈，点击通知能正确回到 App
+        val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+        val pendingIntent = TaskStackBuilder.create(this).apply {
+            addNextIntentWithParentStack(launchIntent!!)
+        }.getPendingIntent(
+            0,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         // "停止录音" 按钮
         val stopIntent = Intent(this, RecordingService::class.java).apply {

@@ -13,6 +13,7 @@ import NoteDetailScreen from './src/screens/NoteDetailScreen';
 import RecycleBinScreen from './src/screens/RecycleBinScreen';
 import GraphScreen from './src/screens/GraphScreen';
 import VoiceNoteScreen from './src/screens/VoiceNoteScreen';
+import { VoiceNoteScreenV2 } from './src/screens/VoiceNoteScreenV2';
 import SettingsScreen from './src/screens/SettingsScreen';
 import FeedbackScreen from './src/screens/FeedbackScreen';
 import FeedbackButton from './src/components/FeedbackButton';
@@ -103,6 +104,11 @@ function NotesNavigator() {
         name="VoiceNote"
         component={VoiceNoteScreen}
         options={() => ({ title: '语音笔记' })}
+      />
+      <NotesStack.Screen
+        name="VoiceNoteV2"
+        component={VoiceNoteScreenV2}
+        options={() => ({ title: '语音笔记 v2' })}
       />
     </NotesStack.Navigator>
   );
