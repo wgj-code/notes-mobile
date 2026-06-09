@@ -31,3 +31,4 @@ android/.gradle/
 build-*.apk
 assets/models/
 assets/models/
+test-results.json
