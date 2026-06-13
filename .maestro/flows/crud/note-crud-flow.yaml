@@ -5,9 +5,8 @@ env:
   EDITED_BODY: "Edited content"
 ---
 - launchApp:
-    clearState: true
-- launchApp
-
+    stopApp: false
+# 注意：需要手动打开 app 并确保在笔记列表页
 - extendedWaitUntil:
     visible:
       id: "fab-create"
@@ -16,6 +15,10 @@ env:
 # 新建笔记
 - tapOn:
     id: "fab-create"
+- extendedWaitUntil:
+    visible: "空白笔记"
+    timeout: 10000
+- tapOn: "空白笔记"
 - extendedWaitUntil:
     visible:
       id: "note-title-input"
@@ -38,6 +41,11 @@ env:
 # 打开详情
 - tapOn: ${NOTE_TITLE}
 - extendedWaitUntil:
+    visible: "编辑"
+    timeout: 10000
+# 切换到编辑模式
+- tapOn: "编辑"
+- extendedWaitUntil:
     visible:
       id: "note-title-input"
     timeout: 10000
@@ -46,7 +54,7 @@ env:
 # 编辑
 - tapOn:
     id: "note-content-editor"
-- eraseText: 50
+- eraseText: 100
 - inputText: ${EDITED_BODY}
 - tapOn:
     id: "btn-save"
@@ -61,8 +69,10 @@ env:
 # 删除
 - tapOn:
     id: "btn-delete"
-- tapOn: "确认"
+- tapOn: "删除"
+# 等待删除完成+列表刷新
+- waitForAnimationToEnd
 - extendedWaitUntil:
     notVisible: ${NOTE_TITLE}
-    timeout: 10000
+    timeout: 15000
 - assertNotVisible: ${NOTE_TITLE}

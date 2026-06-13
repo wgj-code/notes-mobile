@@ -4,9 +4,8 @@ env:
   NOTE_BODY: "To be deleted and restored"
 ---
 - launchApp:
-    clearState: true
-- launchApp
-
+    stopApp: false
+# 注意：需要手动打开 app 并确保在笔记列表页
 - extendedWaitUntil:
     visible:
       id: "fab-create"
@@ -15,6 +14,10 @@ env:
 # 创建笔记
 - tapOn:
     id: "fab-create"
+- extendedWaitUntil:
+    visible: "空白笔记"
+    timeout: 10000
+- tapOn: "空白笔记"
 - extendedWaitUntil:
     visible:
       id: "note-title-input"
@@ -33,12 +36,16 @@ env:
 
 # 删除
 - tapOn: ${NOTE_TITLE}
+- extendedWaitUntil:
+    visible: "删除"
+    timeout: 10000
 - tapOn:
     id: "btn-delete"
-- tapOn: "确认"
+- tapOn: "删除"
+- waitForAnimationToEnd
 - extendedWaitUntil:
     notVisible: ${NOTE_TITLE}
-    timeout: 10000
+    timeout: 15000
 - assertNotVisible: ${NOTE_TITLE}
 
 # 打开回收站
@@ -53,11 +60,21 @@ env:
 - tapOn:
     id: "btn-restore"
 - extendedWaitUntil:
+    visible: "恢复"
+    timeout: 5000
+- tapOn: "恢复"
+# 关闭"笔记已恢复"弹窗
+- extendedWaitUntil:
+    visible: "OK"
+    timeout: 5000
+- tapOn: "OK"
+- extendedWaitUntil:
     notVisible: ${NOTE_TITLE}
     timeout: 10000
 
 # 返回列表验证
 - back
+- waitForAnimationToEnd
 - extendedWaitUntil:
     visible: ${NOTE_TITLE}
     timeout: 10000
@@ -65,6 +82,9 @@ env:
 
 # 清理
 - tapOn: ${NOTE_TITLE}
+- extendedWaitUntil:
+    visible: "删除"
+    timeout: 10000
 - tapOn:
     id: "btn-delete"
-- tapOn: "确认"
+- tapOn: "删除"

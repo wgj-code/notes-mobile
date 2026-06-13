@@ -6,9 +6,8 @@ env:
   UNRELATED: "Unrelated Note"
 ---
 - launchApp:
-    clearState: true
-- launchApp
-
+    stopApp: false
+# 注意：需要手动打开 app 并确保在笔记列表页
 - extendedWaitUntil:
     visible:
       id: "fab-create"
@@ -17,6 +16,10 @@ env:
 # 创建测试笔记 1
 - tapOn:
     id: "fab-create"
+- extendedWaitUntil:
+    visible: "空白笔记"
+    timeout: 10000
+- tapOn: "空白笔记"
 - extendedWaitUntil:
     visible:
       id: "note-title-input"
@@ -34,6 +37,10 @@ env:
 - tapOn:
     id: "fab-create"
 - extendedWaitUntil:
+    visible: "空白笔记"
+    timeout: 10000
+- tapOn: "空白笔记"
+- extendedWaitUntil:
     visible:
       id: "note-title-input"
     timeout: 10000
@@ -49,6 +56,10 @@ env:
 # 创建无关笔记
 - tapOn:
     id: "fab-create"
+- extendedWaitUntil:
+    visible: "空白笔记"
+    timeout: 10000
+- tapOn: "空白笔记"
 - extendedWaitUntil:
     visible:
       id: "note-title-input"
@@ -82,7 +93,7 @@ env:
 - tapOn: ${TITLE_1}
 - tapOn:
     id: "btn-delete"
-- tapOn: "确认"
+- tapOn: "删除"
 - extendedWaitUntil:
     notVisible: ${TITLE_1}
     timeout: 10000
@@ -90,7 +101,7 @@ env:
 - tapOn: ${TITLE_2}
 - tapOn:
     id: "btn-delete"
-- tapOn: "确认"
+- tapOn: "删除"
 - extendedWaitUntil:
     notVisible: ${TITLE_2}
     timeout: 10000
@@ -98,4 +109,4 @@ env:
 - tapOn: ${UNRELATED}
 - tapOn:
     id: "btn-delete"
-- tapOn: "确认"
+- tapOn: "删除"
