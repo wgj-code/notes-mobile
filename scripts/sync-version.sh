@@ -16,9 +16,13 @@ echo "=== 同步版本号到 ${NEW_VERSION} ==="
 sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${NEW_VERSION}\"/" "$PROJECT_DIR/app.json"
 echo "✅ app.json → ${NEW_VERSION}"
 
-# 2. build.gradle
+# 2. build.gradle (versionName + versionCode自增)
 sed -i "s/versionName \"[^\"]*\"/versionName \"${NEW_VERSION}\"/" "$PROJECT_DIR/android/app/build.gradle"
-echo "✅ build.gradle → ${NEW_VERSION}"
+# 自增 versionCode
+CURRENT_CODE=$(grep 'versionCode' "$PROJECT_DIR/android/app/build.gradle" | grep -o '[0-9]*')
+NEW_CODE=$((CURRENT_CODE + 1))
+sed -i "s/versionCode [0-9]*/versionCode ${NEW_CODE}/" "$PROJECT_DIR/android/app/build.gradle"
+echo "✅ build.gradle → versionName: ${NEW_VERSION}, versionCode: ${NEW_CODE}"
 
 # 3. 服务端 version.json
 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@${SERVER_IP} "cat > /opt/apk-releases/version.json << EOF

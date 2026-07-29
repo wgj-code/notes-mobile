@@ -36,7 +36,7 @@ export default function SpeechPlayer({ visible, onClose }: Props) {
   const styles = makeStyles(colors);
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={styles.overlay} onPress={onClose} activeOpacity={1}>
         <TouchableOpacity style={styles.panel} activeOpacity={1}>
           <View style={styles.handle} />
@@ -163,7 +163,7 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       borderTopRightRadius: borderRadius.lg,
       padding: spacing.xl,
       paddingBottom: spacing.xxl,
-      maxHeight: '80%',
+      maxHeight: '95%',
     },
     handle: {
       width: 40,
@@ -206,7 +206,7 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      gap: spacing.xl,
+      gap: 28,
       marginBottom: spacing.lg,
     },
     controlBtn: {
@@ -217,9 +217,9 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       color: c.textSecondary,
     },
     playBtn: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
+      width: 72,
+      height: 72,
+      borderRadius: 36,
       backgroundColor: c.primary,
       justifyContent: 'center',
       alignItems: 'center',
