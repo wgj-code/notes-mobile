@@ -25,6 +25,7 @@ class MainApplication : Application(), ReactApplication {
             val packages = PackageList(this).packages
             packages.add(WakeLockPackage())
             packages.add(RecordingServicePackage())
+            packages.add(TtsPlaybackServicePackage())
             return packages
           }
 

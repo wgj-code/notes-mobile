@@ -54,6 +54,9 @@ interface NotesState {
 
   syncLocalToRemote: () => Promise<void>;
 
+  // AI Note Generation
+  generateNote: (prompt: string) => Promise<{ title: string; content: string }>;
+
   // Realtime handlers
   handleRealtimeNoteChange: (payload: any) => void;
   handleRealtimeFolderChange: (payload: any) => void;
@@ -464,6 +467,25 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         set({ folders: get().folders.filter((f) => f.id !== oldRecord.id) });
         break;
     }
+  },
+
+  generateNote: async (prompt: string) => {
+    const { data, error } = await supabase.functions.invoke('note-generate', {
+      body: { prompt },
+    });
+
+    if (error) {
+      throw new Error(error.message || '生成失败');
+    }
+
+    if (!data?.ok) {
+      throw new Error(data?.error || '生成失败');
+    }
+
+    return {
+      title: data.title || '',
+      content: data.content || '',
+    };
   },
 }));
 

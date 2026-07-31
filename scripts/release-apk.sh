@@ -1,5 +1,5 @@
 #!/bin/bash
-# 一键发布 APK：版本同步 + 构建 + 上传服务器
+# 一键发布 APK：版本同步 + 构建 + 上传服务器 + Edge Function 部署
 # 用法: bash scripts/release-apk.sh [version] [releaseNote]
 # 示例: bash scripts/release-apk.sh 0.1.91 "R1标题+R2标签+R3重试"
 
@@ -17,6 +17,17 @@ bash "$SCRIPT_DIR/sync-version.sh" "$NEW_VERSION"
 
 # 2. 构建
 bash "$SCRIPT_DIR/build-debug-apk.sh" --slim
+
+# 2.5 部署 Edge Functions（防止遗漏）
+echo "=== 部署 Edge Functions ==="
+BACKEND_DIR="$(cd "$PROJECT_DIR/../notes-backend" && pwd)"
+if [ -d "$BACKEND_DIR" ]; then
+  bash "$BACKEND_DIR/scripts/deploy-backend.sh" || {
+    echo "⚠️  Edge Function 部署失败，请手动检查"
+  }
+else
+  echo "⚠️  后端目录不存在: $BACKEND_DIR"
+fi
 
 # 3. 上传到服务器
 APK_SRC="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"

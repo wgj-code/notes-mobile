@@ -177,6 +177,13 @@ export default function NotesScreen({ navigation }: any) {
         >
           <Text style={styles.voiceNoteBtnText}>🎤 语音笔记</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          testID="btn-text-note-generation"
+          style={[styles.voiceNoteBtn, styles.textNoteBtn]}
+          onPress={() => navigation.navigate('TextNoteGeneration')}
+        >
+          <Text style={styles.voiceNoteBtnText}>✍️ 文字生成</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Folder tree (collapsible) */}
@@ -258,15 +265,21 @@ function makeStyles(c: ReturnType<typeof useThemeColors>) {
       fontWeight: '500',
     },
     voiceNoteRow: {
+      flexDirection: 'row',
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.sm,
+      gap: spacing.sm,
     },
     voiceNoteBtn: {
+      flex: 1,
       backgroundColor: c.primary,
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.sm,
       alignItems: 'center',
+    },
+    textNoteBtn: {
+      backgroundColor: c.secondary || '#6c757d',
     },
     voiceNoteBtnText: {
       color: '#ffffff',

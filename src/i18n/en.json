@@ -76,7 +76,9 @@
     "recycleBinContent": "Notes moved to trash will appear here",
     "graph": "Graph",
     "autoSaved": "Auto-saved",
-    "saveAndClose": "Save & Close"
+    "saveAndClose": "Save & Close",
+    "textNoteGeneration": "Text Generate",
+    "textNoteGenerationDesc": "Input text, AI generates notes"
   },
   "settings": {
     "settings": "Settings",

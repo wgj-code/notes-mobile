@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { NativeModules } from 'react-native';
 import { createStreamingTTS, type StreamingTtsEngine } from 'react-native-sherpa-onnx/tts';
 import { assetModelPath } from 'react-native-sherpa-onnx';
+
+const { TtsPlaybackServiceModule } = NativeModules;
 
 export type PlayMode = 'sequential' | 'random' | 'loop';
 export type SpeechRate = 'slow' | 'normal' | 'fast';
@@ -75,6 +78,9 @@ export function useSpeech(notes: Note[]) {
     // Save snapshot for the next-note callback (avoids stale closure)
     currentNoteRef.current = { index, mode: currentMode, rate: currentRate, voice: currentVoice };
 
+    // 启动前台服务（后台播放 + 防休眠）
+    TtsPlaybackServiceModule?.start?.()?.catch?.(() => {});
+
     try {
       // Start native PCM player
       const sampleRate = await ttsRef.current.getSampleRate();
@@ -99,15 +105,18 @@ export function useSpeech(notes: Note[]) {
             // Auto-advance to next note
             const snap = currentNoteRef.current;
             if (!snap) return;
-            if (snap.mode === 'loop') playNote(snap.index);
-            else if (snap.mode === 'sequential' && snap.index < notes.length - 1) playNote(snap.index + 1);
-            else if (snap.mode === 'random') playNote(Math.floor(Math.random() * notes.length));
+            if (snap.mode === 'loop') { playNote(snap.index); return; }
+            if (snap.mode === 'sequential' && snap.index < notes.length - 1) { playNote(snap.index + 1); return; }
+            if (snap.mode === 'random') { playNote(Math.floor(Math.random() * notes.length)); return; }
+            // 没有下一首，停止前台服务
+            TtsPlaybackServiceModule?.stop?.()?.catch?.(() => {});
           },
           onError: (event) => {
             console.error('TTS stream error:', event.message);
             isPlayingRef.current = false;
             setIsPlaying(false);
             ttsRef.current?.stopPcmPlayer();
+            TtsPlaybackServiceModule?.stop?.()?.catch?.(() => {});
           },
         },
       );
@@ -117,6 +126,7 @@ export function useSpeech(notes: Note[]) {
       isPlayingRef.current = false;
       setIsPlaying(false);
       ttsRef.current?.stopPcmPlayer();
+      TtsPlaybackServiceModule?.stop?.()?.catch?.(() => {});
     }
   }, [notes, rate, mode, voice]);
 
@@ -156,6 +166,7 @@ export function useSpeech(notes: Note[]) {
     setIsPlaying(false);
     isPlayingRef.current = false;
     setCurrentIndex(0);
+    TtsPlaybackServiceModule?.stop?.()?.catch?.(() => {});
   }, []);
 
   return { isPlaying, currentIndex, mode, rate, voice, ttsReady, ttsError, setMode, setRate, setVoice, togglePlay, playAtIndex, playPrev, playNext, stop };
