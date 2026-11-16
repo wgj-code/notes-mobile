@@ -31,4 +31,8 @@ android/.gradle/
 build-*.apk
 assets/models/
 assets/models/
+# ML 模型文件（超大，不进 git，通过备份包/脚本分发）
+*.onnx
+*.int8.onnx
+voices.bin
 test-results.json
